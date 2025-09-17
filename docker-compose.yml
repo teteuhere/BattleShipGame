@@ -1,0 +1,48 @@
+# docker-compose.yml
+
+services:
+  # The MySQL Database Service
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: 'your_strong_root_password'
+      MYSQL_DATABASE: 'battleship_db'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # The Ollama AI Service
+  ollama:
+    image: ollama/ollama
+    container_name: ollama_ai
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+
+  # The Django Web Application Service
+  web:
+    build: .
+    container_name: django_web
+    # Temporarily change the command to this:
+    command: tail -f /dev/null 
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - ollama
+    environment:
+      - DB_NAME=battleship_db
+      - DB_USER=user
+      - DB_PASS=password
+      - DB_HOST=db # The service name 'db' is the hostname
+      - DB_PORT=3306
+      - OLLAMA_HOST=ollama # The service name 'ollama' is the hostname
+
+volumes:
+  mysql_data:
+  ollama_data:
