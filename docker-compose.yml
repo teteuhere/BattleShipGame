@@ -27,7 +27,7 @@ services:
     build: .
     container_name: django_web
     # Temporarily change the command to this:
-    command: tail -f /dev/null 
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
     ports:
