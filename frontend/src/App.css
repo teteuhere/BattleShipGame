@@ -1,0 +1,59 @@
+/* frontend/src/App.css */
+
+body {
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+.app-container {
+  padding: 2rem;
+}
+
+.game-layout {
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
+  margin-top: 2rem;
+}
+
+.game-board {
+  display: grid;
+  grid-template-columns: repeat(10, 30px);
+  grid-template-rows: repeat(10, 30px);
+  border: 2px solid #666;
+  gap: 2px;
+  background-color: #333;
+}
+
+.cell {
+  width: 30px;
+  height: 30px;
+  background-color: #4a90e2; /* A nice water blue */
+  border: 1px solid #333;
+}
+
+.cell:hover {
+  background-color: #8ecae6;
+  cursor: pointer;
+}
+
+button {
+  font-size: 1.2rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #ff4d4d;
+}

@@ -5,9 +5,12 @@ ENV PYTHONUNBUFFERED 1
 WORKDIR /code
 
 # ADD THIS LINE to install system dependencies for mysqlclient
-RUN apt-get update && apt-get install -y build-essential default-libmysqlclient-dev pkg-config curl
+RUN apt-get update && apt-get install -y build-essential default-libmysqlclient-dev pkg-config curl nodejs npm
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY . .
+EXPOSE 8000
+
+CMD ["python", "manage.py", "runserver"]

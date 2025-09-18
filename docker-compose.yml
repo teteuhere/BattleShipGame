@@ -24,14 +24,12 @@ services:
 
   # The Django Web Application Service
   web:
-    build: .
-    container_name: django_web
-    # Temporarily change the command to this:
-    command: python manage.py runserver 0.0.0.0:8000
+    build: frontend/.
+    container_name: web-app
     volumes:
-      - .:/code
+      - .:/node_modules
     ports:
-      - "8000:8000"
+      - "5173:5173"
     depends_on:
       - db
       - ollama
@@ -46,3 +44,7 @@ services:
 volumes:
   mysql_data:
   ollama_data:
+
+networks:
+  default:
+    driver: bridge
