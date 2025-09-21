@@ -1,54 +1,69 @@
 import requests
 import json
-from .models import Player
-from .logic import process_shot # Import the core logic!
+import random
+from .models import Player, Shot
+from .logic import process_shot
 
 def trigger_ai_turn(game):
     """
     Constructs a prompt for the Ollama AI, gets its move, and processes it.
     """
     try:
-        # Find the AI and human players in the current game
         ai_player = game.players.get(is_ai=True)
-        human_player = game.players.get(is_ai=False)
     except Player.DoesNotExist:
-        return {"error": "Could not find the AI or human player."}
+        return {"error": "Could not find the AI player."}
 
-    # --- Construct a Prompt for the AI ---
-    # This prompt asks the AI to act as a Battleship player and return
-    # its move in a clean JSON format.
+    ai_shots = Shot.objects.filter(player=ai_player).order_by('timestamp')
+    shot_history = []
+    already_shot_coords = []
+    for shot in ai_shots:
+        result = "hit" if shot.is_hit else "miss"
+        shot_history.append(f"- Shot at {shot.coordinates}: {result}")
+        # Use a tuple for faster checking later
+        already_shot_coords.append(tuple(shot.coordinates))
+    
+    shot_history_str = "\\n".join(shot_history)
+    if not shot_history_str:
+        shot_history_str = "You have not fired any shots yet."
+
     prompt = (
-        "You are a Battleship AI. The game board is 10x10 (coordinates 0-9). "
-        "Your goal is to sink the human player's ships. "
-        "Return your next shot as a JSON object like {\"coordinates\": [x, y]}. "
-        "Do not add any other text or explanation outside of the JSON. "
-        "A clever coordinate to shoot at would be: "
+        "You are a Battleship AI. The board is 10x10 (0-9). "
+        "Your goal is to sink the human's ships. "
+        "Here are your previous shots:\\n"
+        f"{shot_history_str}\\n"
+        f"Do not shoot at these coordinates again: {already_shot_coords}\\n"
+        "Return your next shot as JSON, like {\"coordinates\": [x, y]}. "
+        "Do not add any other text. A clever coordinate to shoot at would be:"
     )
 
-    # --- Call the Ollama AI Service ---
     try:
-        # The URL uses the Docker service name 'ollama' as the hostname
         ollama_url = "http://ollama:11434/api/generate"
         payload = {
-            "model": "deepseek-coder", # The model you are using
+            "model": "gemma:2b",  # Using a much faster model
             "prompt": prompt,
             "stream": False,
-            "format": "json" # This tells Ollama to ensure the output is valid JSON
+            "format": "json"
         }
 
-        # Make the request to the Ollama container
-        response = requests.post(ollama_url, json=payload)
-        response.raise_for_status() # This will raise an error for bad responses (like 404 or 500)
+        # Make the request with a 20-second timeout
+        response = requests.post(ollama_url, json=payload, timeout=20)
+        response.raise_for_status()
 
-        # Parse the JSON response from Ollama
         response_text = response.json().get('response', '{}')
         ai_move = json.loads(response_text)
         ai_coordinates = ai_move.get("coordinates")
 
-        if not ai_coordinates:
+        if not ai_coordinates or not isinstance(ai_coordinates, list) or len(ai_coordinates) != 2:
             return {"error": "The AI did not return valid coordinates."}
+        
+        # Fallback if the AI chooses a coordinate it has already fired at
+        if tuple(ai_coordinates) in set(already_shot_coords):
+            all_coords = set((r, c) for r in range(10) for c in range(10))
+            available_coords = list(all_coords - set(already_shot_coords))
+            if not available_coords:
+                return {"error": "No available coordinates to shoot at."}
+            ai_coordinates = list(random.choice(available_coords))
 
-        # Use the SAME logic function to process the AI's shot!
         ai_shot_result = process_shot(game, ai_player, ai_coordinates)
         return {"coordinates": ai_coordinates, "result": ai_shot_result}
 

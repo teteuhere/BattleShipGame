@@ -61,8 +61,14 @@ docker-compose exec web python manage.py migrate
 Once the initial setup is complete, you can use these commands to manage the application.
 
 #### **Starting the Docker Services**
+To build the services, run:
+
+```bash
+docker-compose up -d --build
+```
 
 To start all the backend services (Django, MySQL, Ollama) after they've been stopped, run:
+
 
 ```bash
 docker-compose start

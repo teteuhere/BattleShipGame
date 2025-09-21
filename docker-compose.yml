@@ -2,23 +2,25 @@
 
 services:
   # The MySQL Database Service
-  db:
-    image: mysql:8.0
-    container_name: mysql_db
-    env_file:
-      - .env
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASS}
-    volumes:
-      - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USER}", "-p${DB_PASS}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # db:
+  #   image: mysql:8.0
+  #   container_name: mysql_db
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: ${DB_ROOT}
+  #     MYSQL_DATABASE: ${DB_NAME}
+  #     MYSQL_USER: ${DB_USER}
+  #     MYSQL_PASSWORD: ${DB_PASS}
+  #   ports:
+  #     - "3306:3306" # Maps container port 3306 to host port 3306
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #   healthcheck:
+  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USER}", "-p${DB_PASS}"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
 
   # The Ollama AI Service
@@ -34,23 +36,22 @@ services:
   web:
     build: .
     container_name: django_web
-    # Temporarily change the command to this:
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
     ports:
       - "8000:8000"
     depends_on:
-      db:
-        condition: service_healthy
       ollama:
         condition: service_started
     env_file:
       - .env
     environment:
-      - DB_HOST=db # The service name 'db' is the hostname
-      - OLLAMA_HOST=ollama # The service name 'ollama' is the hostname
+      - DB_HOST=host.docker.internal
+      - OLLAMA_HOST=ollama
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 
 volumes:
-  mysql_data:
   ollama_data:

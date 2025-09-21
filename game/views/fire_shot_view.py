@@ -1,15 +1,15 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from game.models import Game, Player
-# Import our brand new logic and AI functions!
-from game.logic import process_shot
-from game.ai import trigger_ai_turn
+from ..models import Game, Player
+from ..logic import process_shot
+from ..ai import trigger_ai_turn
+from ..serializers import GameSerializer 
 
 class FireShotView(APIView):
     """
-    An API endpoint for a player to fire a shot. It processes the player's
-    move and then triggers the AI's counter-move.
+    This endpoint now intelligently handles turns and returns the complete,
+    updated game state after the move (and the AI's counter-move, if applicable).
     """
     def post(self, request, *args, **kwargs):
         game_id = self.kwargs.get('pk')
@@ -17,10 +17,7 @@ class FireShotView(APIView):
         coordinates = request.data.get('coordinates')
 
         if not all([player_id, coordinates]):
-            return Response(
-                {"error": "A player_id and coordinates are required to fire a shot."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "player_id and coordinates are required."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             game = Game.objects.get(id=game_id)
@@ -28,23 +25,35 @@ class FireShotView(APIView):
 
             if game.status == 'finished':
                 return Response({"message": "This game is over!"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if game.current_turn != player:
+                return Response({"error": "It's not your turn!"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # --- Player's Turn ---
-            player_shot_result = process_shot(game, player, coordinates)
-
-            # --- AI's Turn ---
-            ai_shot_response = None
-            # If the player's shot didn't end the game, the AI takes its turn
+            # --- Process the Human Player's Shot ---
+            process_shot(game, player, coordinates)
+            
+            # --- Check if it's now the AI's turn ---
             if game.status != 'finished':
-                ai_shot_response = trigger_ai_turn(game)
+                opponent = game.players.exclude(id=player.id).get()
+                game.current_turn = opponent
+                game.save()
 
-            return Response({
-                "player_shot": player_shot_result,
-                "ai_shot": ai_shot_response
-            }, status=status.HTTP_200_OK)
+                if opponent.is_ai:
+                    ai_response = trigger_ai_turn(game)
+                    if "error" in ai_response:
+                        # If the AI fails to make a move, return an error
+                        return Response(
+                            {"error": f"AI opponent failed to make a move: {ai_response['error']}"},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                        )
+
+                    if game.status != 'finished':
+                        game.current_turn = player
+                        game.save()
+            
+            # Serialize and return the entire updated game state
+            serializer = GameSerializer(game)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         except (Game.DoesNotExist, Player.DoesNotExist):
-            return Response(
-                {"error": "Game or Player not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"error": "Game or Player not found."}, status=status.HTTP_404_NOT_FOUND)
