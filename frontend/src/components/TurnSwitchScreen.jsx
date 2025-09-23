@@ -1,9 +1,7 @@
 import React from 'react';
 
-/**
- * A simple interstitial screen to manage the transition between players' turns
- * during the setup phase.
- */
+// Tela para gerenciar a troca de turnos entre os jogadores durante a configuração.
+
 function TurnSwitchScreen({ nextPlayerName, onReady }) {
   return (
     <div className="flex flex-col items-center gap-8 text-center animate-fade-in">

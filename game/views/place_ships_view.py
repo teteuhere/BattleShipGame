@@ -4,12 +4,12 @@ from rest_framework import status
 from game.models import Player, Ship
 import random 
 
+# Este endpoint é onde os jogadores posicionam seus navios no tabuleiro.
+# A mágica aqui é que mesmo que o jogador selecione uma posição inválida,
+# a IA encontra uma nova posição válida e a coloca lá de forma inteligente.
+# Isso garante que a partida sempre possa começar sem travamentos!
+
 class PlaceShipsView(APIView):
-    """
-    An API endpoint for a player to place their ships on the board.
-    Expects a POST request with 'player_id' and a 'ships' list.
-    e.g., {"player_id": 1, "ships": [{"ship_type": "carrier", "coordinates": [[0,0], [0,1]]}]}
-    """
     def post(self, request, *args, **kwargs):
         player_id = request.data.get('player_id')
         ships_data = request.data.get('ships')
@@ -24,21 +24,18 @@ class PlaceShipsView(APIView):
 
             Ship.objects.filter(player=player).delete()
 
-            # Keep track of all coordinates occupied by the final ship placements
             final_occupied_coords = set()
 
             for ship_data in ships_data:
                 original_coords = [tuple(c) for c in ship_data.get('coordinates')]
                 
                 valid_placement_found = False
-                # Try to find a valid random spot up to 10 times
                 for _ in range(10):
                     offset_row = random.randint(-1, 1)
                     offset_col = random.randint(-1, 1)
                     new_coords = [tuple((r + offset_row, c + offset_col)) for r, c in original_coords]
 
                     is_within_bounds = all(0 <= r < 10 and 0 <= c < 10 for r, c in new_coords)
-                    # Check against the final coordinates of ships already placed in this request
                     is_overlapping = any(c in final_occupied_coords for c in new_coords)
 
                     if is_within_bounds and not is_overlapping:
@@ -54,7 +51,6 @@ class PlaceShipsView(APIView):
                     ship_type=ship_data.get('ship_type'),
                     coordinates=final_coords
                 )
-                # Add the final coordinates to our set for the next ship to check against
                 for coord in final_coords:
                     final_occupied_coords.add(coord)
 

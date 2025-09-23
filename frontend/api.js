@@ -2,7 +2,11 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8000/api';
 
-// A função agora aceita um objeto playerNames
+// Prepara os dados e envia para o backend iniciar um novo jogo.
+// Manda para o backend o layout final dos navios do jogador.
+// Envia as coordenadas do disparo para o backend e retorna o novo estado do jogo.
+// Comunica diretamente com a IA para uma conversa.
+
 export const createGame = async (gameMode, playerNames) => {
   try {
     const payload = {
@@ -18,10 +22,6 @@ export const createGame = async (gameMode, playerNames) => {
   }
 };
 
-
-/**
- * Takes the final ship layout and sends it to the backend to be saved.
- */
 export const placeShips = async (gameId, playerId, ships) => {
   try {
     const payload = {
@@ -36,21 +36,27 @@ export const placeShips = async (gameId, playerId, ships) => {
   }
 };
 
-/**
- * Sends shot coordinates to the backend and returns the complete, updated
- * game state from the single API call. This is super efficient!
- */
 export const fireShot = async (gameId, playerId, coordinates) => {
     try {
         const payload = {
             player_id: playerId,
             coordinates: coordinates,
         };
-        // The POST request now returns the full game state!
         const response = await axios.post(`${API_URL}/games/${gameId}/fire/`, payload);
         return response.data;
     } catch (error) {
         console.error("Error firing shot:", error);
         throw error;
     }
+};
+
+export const chatWithAI = async (message) => {
+  try {
+    const payload = { message: message };
+    const response = await axios.post(`${API_URL}/chat-ai/`, payload);
+    return response.data;
+  } catch (error) {
+    console.error("Error chatting with AI:", error);
+    throw error;
+  }
 };

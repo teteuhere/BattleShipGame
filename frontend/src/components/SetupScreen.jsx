@@ -1,5 +1,3 @@
-// BattleShipGame/frontend/src/components/SetupScreen.jsx
-
 import React, { useState, useMemo, useEffect } from 'react';
 import GameBoard from './GameBoard.jsx';
 
@@ -73,7 +71,7 @@ function SetupScreen({ player, onPlacementComplete }) {
   return (
     <div className="flex flex-col items-center gap-8 animate-fade-in">
       <div>
-        {/* Esta linha agora exibirá o nome correto */}
+        {}
         <p className="text-xl text-light-slate mb-2">Turno: {player.name}</p>
         <h2 className="text-2xl text-accent mb-2">
           {allShipsPlaced ? "Frota posicionada!" : `Posicionando: ${SHIPS_TO_PLACE[currentShipIndex].name}`}

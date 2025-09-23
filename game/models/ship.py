@@ -1,5 +1,7 @@
 from django.db import models
 
+# Um navio afunda quando a quantidade de acertos é igual ao seu tamanho.
+
 class Ship(models.Model):
     player = models.ForeignKey(
         'game.Player',
@@ -11,5 +13,4 @@ class Ship(models.Model):
 
     @property
     def is_sunk(self):
-        # The ship is sunk if the number of hits is equal to its length
         return self.hits.count() >= len(self.coordinates)

@@ -1,9 +1,10 @@
-// BattleShipGame/frontend/src/components/BattleScreen.jsx
-
 import React, { useMemo } from 'react';
 import GameBoard from './GameBoard.jsx';
 
-// We now accept 'gameMode' as a prop
+// Lógica para desenhar o tabuleiro de cada jogador.
+// Regras de exibição: no modo PvA e quando o jogo termina, mostramos o seu tabuleiro.
+// O radar inimigo está sempre visível.
+
 function BattleScreen({ gameState, onFireShot, gameMode }) {
   const { currentPlayer, opponentPlayer } = useMemo(() => {
     if (!gameState || !gameState.current_turn) {
@@ -52,9 +53,7 @@ function BattleScreen({ gameState, onFireShot, gameMode }) {
     return grid;
   };
 
-  // The logic for building grids remains the same.
   const yourGrid = buildGrid(currentPlayer, shotsByPlayer[opponentPlayer.id] || [], true);
-  // We only show opponent ships if there's a winner.
   const opponentGrid = buildGrid(opponentPlayer, shotsByPlayer[currentPlayer.id] || [], !!gameState.winner);
   
   const isHumanTurn = currentPlayer && !currentPlayer.is_ai;
@@ -68,7 +67,6 @@ function BattleScreen({ gameState, onFireShot, gameMode }) {
     statusMessage = `${currentPlayer.name} is thinking...`;
   }
   
-  // This determines if we are in Player vs AI mode.
   const isPvaMode = gameMode === 'pva';
 
   return (
@@ -81,11 +79,7 @@ function BattleScreen({ gameState, onFireShot, gameMode }) {
       </div>
 
       <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-16">
-        {/* NEW DISPLAY LOGIC!
-          Show the player's grid if:
-          1. It's Player vs. AI mode.
-          2. The game is over (so both players can see the final result).
-        */}
+        {}
         {(isPvaMode || gameState.winner) && (
           <div>
             <h3 className="text-xl text-white mb-4">SUA FROTA ({currentPlayer.name})</h3>
@@ -93,7 +87,7 @@ function BattleScreen({ gameState, onFireShot, gameMode }) {
           </div>
         )}
 
-        {/* Always show the opponent's grid */}
+        {}
         <div>
           <h3 className="text-xl text-white mb-4">RADAR INIMIGO ({opponentPlayer.name})</h3>
           <GameBoard 

@@ -45,8 +45,7 @@ def trigger_ai_turn(game):
             "format": "json"
         }
 
-        # Make the request with a 20-second timeout
-        response = requests.post(ollama_url, json=payload, timeout=20)
+        response = requests.post(ollama_url, json=payload, timeout=60)
         response.raise_for_status()
 
         response_text = response.json().get('response', '{}')
@@ -56,7 +55,6 @@ def trigger_ai_turn(game):
         if not ai_coordinates or not isinstance(ai_coordinates, list) or len(ai_coordinates) != 2:
             return {"error": "The AI did not return valid coordinates."}
         
-        # Fallback if the AI chooses a coordinate it has already fired at
         if tuple(ai_coordinates) in set(already_shot_coords):
             all_coords = set((r, c) for r in range(10) for c in range(10))
             available_coords = list(all_coords - set(already_shot_coords))

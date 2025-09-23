@@ -1,5 +1,3 @@
-// BattleShipGame/frontend/src/App.jsx
-
 import React, { useState, useMemo } from 'react';
 import StartMenu from './components/StartMenu.jsx';
 import NameEntryScreen from './components/NameEntryScreen.jsx';
@@ -8,6 +6,8 @@ import BattleScreen from './components/BattleScreen.jsx';
 import TurnSwitchScreen from './components/TurnSwitchScreen.jsx';
 import GameOverScreen from './components/GameOverScreen.jsx';
 import { createGame, placeShips, fireShot } from '../api.js';
+import HelpModal from './components/HelpModal.jsx';
+import AIChat from './components/AIChat.jsx';
 
 function App() {
   const [gameState, setGameState] = useState(null);
@@ -17,6 +17,7 @@ function App() {
   const [gameMode, setGameMode] = useState('pvp');
   const [placingPlayerId, setPlacingPlayerId] = useState(null);
   const [showTurnSwitch, setShowTurnSwitch] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   const placingPlayer = useMemo(() => {
     if (!gameState) return null;
@@ -145,12 +146,22 @@ function App() {
 
   return (
     <main className="w-full min-h-screen flex items-center justify-center p-8">
+      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
       <div className="max-w-7xl mx-auto text-center">
+        <div className="absolute top-4 right-4 z-50">
+          <button 
+            onClick={() => setShowHelp(true)}
+            className="text-accent text-3xl font-bold hover:text-white transition-colors"
+          >
+            ?
+          </button>
+        </div>
+        
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-white tracking-widest">BATALHA-NAVAL</h1>
           <p className="text-accent mt-2">O CLÁSSICO JOGO BATALHA NAVAL</p>
         </div>
-        
+        <AIChat />
         {renderContent()}
 
         {gameState && gameState.winner && (

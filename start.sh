@@ -1,10 +1,10 @@
-echo "Desligando anteriores"
+echo "Preparando para o lançamento! Desligando as forças anteriores..."
 docker-compose down
 
-echo "Criando e lançando containers"
+echo "Reconstruindo e implantando os navios (containers)..."
 docker-compose up -d --build
 
-echo "Iniciando frontend"
+echo "Iniciando o painel de controle (frontend)..."
 cd frontend && npm run dev
 
-echo "Aplicação iniciada. Acesse em http://localhost:5173"
+echo "Todos a bordo! A aplicação está no ar em http://localhost:5173"

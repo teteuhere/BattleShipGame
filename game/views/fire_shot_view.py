@@ -6,11 +6,13 @@ from ..logic import process_shot
 from ..ai import trigger_ai_turn
 from ..serializers import GameSerializer 
 
+# Endpoint para coordenar a batalha. Ele recebe os disparos e gerencia os turnos.
+# Primeiro, processamos a jogada do comandante humano.
+# Se o jogo ainda não acabou, passamos a vez para o oponente.
+# Se o oponente for a nossa IA, ela faz o contra-ataque.
+# Por fim, enviamos o estado completo e atualizado do jogo para o frontend.
+
 class FireShotView(APIView):
-    """
-    This endpoint now intelligently handles turns and returns the complete,
-    updated game state after the move (and the AI's counter-move, if applicable).
-    """
     def post(self, request, *args, **kwargs):
         game_id = self.kwargs.get('pk')
         player_id = request.data.get('player_id')
@@ -29,10 +31,8 @@ class FireShotView(APIView):
             if game.current_turn != player:
                 return Response({"error": "It's not your turn!"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # --- Process the Human Player's Shot ---
             process_shot(game, player, coordinates)
             
-            # --- Check if it's now the AI's turn ---
             if game.status != 'finished':
                 opponent = game.players.exclude(id=player.id).get()
                 game.current_turn = opponent
@@ -41,7 +41,6 @@ class FireShotView(APIView):
                 if opponent.is_ai:
                     ai_response = trigger_ai_turn(game)
                     if "error" in ai_response:
-                        # If the AI fails to make a move, return an error
                         return Response(
                             {"error": f"AI opponent failed to make a move: {ai_response['error']}"},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -51,7 +50,6 @@ class FireShotView(APIView):
                         game.current_turn = player
                         game.save()
             
-            # Serialize and return the entire updated game state
             serializer = GameSerializer(game)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
