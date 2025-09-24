@@ -8,6 +8,7 @@ import GameOverScreen from './components/GameOverScreen.jsx';
 import { createGame, placeShips, fireShot } from '../api.js';
 import HelpModal from './components/HelpModal.jsx';
 import AIChat from './components/AIChat.jsx';
+import AlertModal from './components/AlertModal.jsx';
 
 function App() {
   const [gameState, setGameState] = useState(null);
@@ -18,6 +19,10 @@ function App() {
   const [placingPlayerId, setPlacingPlayerId] = useState(null);
   const [showTurnSwitch, setShowTurnSwitch] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const handleShowAlert = (message) => {
+    setAlertMessage(message);
+  };
 
   const placingPlayer = useMemo(() => {
     if (!gameState) return null;
@@ -97,8 +102,12 @@ function App() {
     setIsLoading(true);
     setError(null);
     try {
-      const updatedGameState = await fireShot(gameState.id, gameState.current_turn, [row, col]);
-      setGameState(updatedGameState);
+      const response = await fireShot(gameState.id, gameState.current_turn, [row, col]);
+      setGameState(response.game_state);
+      if (response.shot_result && response.shot_result.message) {
+        setAlertMessage(response.shot_result.message);
+      }
+
     } catch (err) {
       setError("Erro ao disparar. O inimigo pode ter bloqueado nossos sistemas!");
     } finally {
@@ -132,7 +141,7 @@ function App() {
         if (!placingPlayer) {
           return <p className="text-accent animate-pulse">Carregando Dados do Jogador...</p>;
         }
-        return <SetupScreen key={placingPlayer.id} player={placingPlayer} onPlacementComplete={handlePlacementComplete} />;
+        return <SetupScreen key={placingPlayer.id} player={placingPlayer} onPlacementComplete={handlePlacementComplete} onShowAlert={handleShowAlert} />;
       case 'battle':
         if (!gameState) {
           return <p className="text-accent animate-pulse">Preparando para a Batalha...</p>;
@@ -163,6 +172,7 @@ function App() {
         </div>
         <AIChat />
         {renderContent()}
+        {alertMessage && <AlertModal message={alertMessage} onClose={() => setAlertMessage('')} />}
 
         {gameState && gameState.winner && (
           <GameOverScreen gameState={gameState} onPlayAgain={handlePlayAgain} />

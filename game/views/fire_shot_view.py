@@ -31,7 +31,7 @@ class FireShotView(APIView):
             if game.current_turn != player:
                 return Response({"error": "It's not your turn!"}, status=status.HTTP_400_BAD_REQUEST)
 
-            process_shot(game, player, coordinates)
+            shot_result = process_shot(game, player, coordinates)
             
             if game.status != 'finished':
                 opponent = game.players.exclude(id=player.id).get()
@@ -45,13 +45,17 @@ class FireShotView(APIView):
                             {"error": f"AI opponent failed to make a move: {ai_response['error']}"},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR
                         )
-
                     if game.status != 'finished':
                         game.current_turn = player
                         game.save()
             
             serializer = GameSerializer(game)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            return Response({
+                "game_state": serializer.data,
+                "shot_result": shot_result
+            }, status=status.HTTP_200_OK)
 
         except (Game.DoesNotExist, Player.DoesNotExist):
             return Response({"error": "Game or Player not found."}, status=status.HTTP_404_NOT_FOUND)
+

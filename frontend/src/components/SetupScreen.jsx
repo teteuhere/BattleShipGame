@@ -9,7 +9,7 @@ const SHIPS_TO_PLACE = [
     { name: 'Destruidor', length: 2 },
 ];
   
-function SetupScreen({ player, onPlacementComplete }) {
+function SetupScreen({ player, onPlacementComplete, onShowAlert }) {
   const [currentShipIndex, setCurrentShipIndex] = useState(0);
   const [orientation, setOrientation] = useState('horizontal');
   const [placedShips, setPlacedShips] = useState([]);
@@ -56,7 +56,7 @@ function SetupScreen({ player, onPlacementComplete }) {
         const newCol = orientation === 'horizontal' ? startCol + i : startCol;
 
         if (grid[newRow][newCol].hasShip) {
-            alert("Posicionamento inválido: os navios não podem se sobrepor!");
+            onShowAlert("Posicionamento inválido: os navios não podem se sobrepor!");
             return;
         }
         newShipCoordinates.push([newRow, newCol]);
