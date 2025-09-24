@@ -24,43 +24,62 @@ def process_shot(game, firing_player, coordinates):
     hit_ship = None
 
     for ship in opponent.ships.all():
-        ship_coords_tuples = [tuple(c) for c in ship.coordinates]
-        shot_coord_tuple = tuple(coordinates)
-        if shot_coord_tuple in ship_coords_tuples:
+        if tuple(coordinates) in [tuple(c) for c in ship.coordinates]:
             shot_is_a_hit = True
             hit_ship = ship
             break
 
     if shot_is_a_hit:
-        for coord in hit_ship.coordinates:
-            Shot.objects.get_or_create(
-                game=game,
-                player=firing_player,
-                coordinates=coord,
-                defaults={'is_hit': True, 'hit_ship': hit_ship}
-            )
-
-        firing_player.hits += 1
-        result_message = {"result": "hit", "message": f"You sunk the opponent's {hit_ship.ship_type}!"}
-
+        ships_to_sink = [hit_ship]
+        processed_ids = {hit_ship.id}
+        
+        i = 0
+        while i < len(ships_to_sink):
+            current_ship = ships_to_sink[i]
+            blast_radius = set()
+            for r, c in current_ship.coordinates:
+                for dr in [-1, 0, 1]:
+                    for dc in [-1, 0, 1]:
+                        if dr == 0 and dc == 0:
+                            continue
+                        blast_radius.add((r + dr, c + dc))
+            for other_ship in opponent.ships.all():
+                if other_ship.id not in processed_ids:
+                    for coord in other_ship.coordinates:
+                        if tuple(coord) in blast_radius:
+                            ships_to_sink.append(other_ship)
+                            processed_ids.add(other_ship.id)
+                            break 
+            i += 1
+        total_hits = 0
+        for ship in ships_to_sink:
+            total_hits += len(ship.coordinates)
+            for coord in ship.coordinates:
+                Shot.objects.get_or_create(
+                    game=game, player=firing_player, coordinates=coord,
+                    defaults={'is_hit': True, 'hit_ship': ship}
+                )
+        firing_player.hits += total_hits
         if all(s.is_sunk for s in opponent.ships.all()):
             game.status = 'finished'
             game.winner = firing_player
             game.finished_at = timezone.now()
-            game.save()
-            result_message = {"result": "win", "message": f"{firing_player.name} has won the game!"}
+            result_message = {"result": "win", "message": "Frota inimiga neutralizada!"}
+        elif len(ships_to_sink) > 1:
+            result_message = {"result": "hit", "message": f"Reação em cadeia! Você afundou {len(ships_to_sink)} navios!"}
+        else:
+            result_message = {"result": "hit", "message": f"Você afundou o navio '{hit_ship.ship_type}' do oponente!"}
+    
     else:
         Shot.objects.create(
-            game=game,
-            player=firing_player,
-            coordinates=coordinates,
-            is_hit=False,
-            hit_ship=None
+            game=game, player=firing_player, coordinates=coordinates,
+            is_hit=False, hit_ship=None
         )
         firing_player.misses += 1
-        result_message = {"result": "miss", "message": "You missed!"}
+        result_message = {"result": "miss", "message": "Você errou o alvo!"}
 
     firing_player.save()
+    game.save()
     return result_message
 
 def place_ai_ships(ai_player):

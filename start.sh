@@ -40,4 +40,4 @@ npm install
 echo "Ligando o servidor do frontend (npm run dev)..."
 npm run dev
 
-echo -e "${GREEN}Todos a bordo! A aplicação está no ar em http://localhost:5173${NC}"
+echo -e "${GREEN}Todos a bordo! A aplicação estava no ar em http://localhost:5173${NC}"
