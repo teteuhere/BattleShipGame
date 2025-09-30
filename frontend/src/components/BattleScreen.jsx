@@ -5,7 +5,7 @@ import GameBoard from './GameBoard.jsx';
 // Regras de exibição: no modo PvA e quando o jogo termina, mostramos o seu tabuleiro.
 // O radar inimigo está sempre visível.
 
-function BattleScreen({ gameState, onFireShot, gameMode }) {
+function BattleScreen({ gameState, onFireShot, gameMode, onSurrender}) {
   const { currentPlayer, opponentPlayer } = useMemo(() => {
     if (!gameState || !gameState.current_turn) {
       return { currentPlayer: null, opponentPlayer: null };
@@ -55,7 +55,7 @@ function BattleScreen({ gameState, onFireShot, gameMode }) {
 
   const yourGrid = buildGrid(currentPlayer, shotsByPlayer[opponentPlayer.id] || [], true);
   const opponentGrid = buildGrid(opponentPlayer, shotsByPlayer[currentPlayer.id] || [], !!gameState.winner);
-  
+
   const isHumanTurn = currentPlayer && !currentPlayer.is_ai;
 
   let statusMessage;
@@ -66,7 +66,7 @@ function BattleScreen({ gameState, onFireShot, gameMode }) {
   } else {
     statusMessage = `${currentPlayer.name} is thinking...`;
   }
-  
+
   const isPvaMode = gameMode === 'pva';
 
   return (
@@ -79,7 +79,6 @@ function BattleScreen({ gameState, onFireShot, gameMode }) {
       </div>
 
       <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-16">
-        {}
         {(isPvaMode || gameState.winner) && (
           <div>
             <h3 className="text-xl text-white mb-4">SUA FROTA ({currentPlayer.name})</h3>
@@ -87,16 +86,24 @@ function BattleScreen({ gameState, onFireShot, gameMode }) {
           </div>
         )}
 
-        {}
         <div>
           <h3 className="text-xl text-white mb-4">RADAR INIMIGO ({opponentPlayer.name})</h3>
-          <GameBoard 
+          <GameBoard
             grid={opponentGrid}
             onCellClick={onFireShot}
             isInteractive={isHumanTurn && !gameState.winner}
           />
         </div>
       </div>
+
+      {!gameState.winner && (
+          <button
+              onClick={() => onSurrender(currentPlayer.id)}
+              className="mt-8 bg-red-600 text-white font-bold py-2 px-6 rounded-md hover:bg-red-700 transition-colors"
+          >
+              Enviar Rendição
+          </button>
+      )}
     </div>
   );
 }

@@ -21,7 +21,7 @@ def trigger_ai_turn(game):
         shot_history.append(f"- Shot at {shot.coordinates}: {result}")
         # Use a tuple for faster checking later
         already_shot_coords.append(tuple(shot.coordinates))
-    
+
     shot_history_str = "\\n".join(shot_history)
     if not shot_history_str:
         shot_history_str = "You have not fired any shots yet."
@@ -54,9 +54,9 @@ def trigger_ai_turn(game):
 
         if not ai_coordinates or not isinstance(ai_coordinates, list) or len(ai_coordinates) != 2:
             return {"error": "The AI did not return valid coordinates."}
-        
+
         if tuple(ai_coordinates) in set(already_shot_coords):
-            all_coords = set((r, c) for r in range(10) for c in range(10))
+            all_coords = {(r, c) for r in range(10) for c in range(10)}
             available_coords = list(all_coords - set(already_shot_coords))
             if not available_coords:
                 return {"error": "No available coordinates to shoot at."}

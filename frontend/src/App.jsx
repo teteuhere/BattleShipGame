@@ -5,7 +5,7 @@ import SetupScreen from './components/SetupScreen.jsx';
 import BattleScreen from './components/BattleScreen.jsx';
 import TurnSwitchScreen from './components/TurnSwitchScreen.jsx';
 import GameOverScreen from './components/GameOverScreen.jsx';
-import { createGame, placeShips, fireShot } from '../api.js';
+import { createGame, placeShips, fireShot, surrenderGame } from '../api.js';
 import HelpModal from './components/HelpModal.jsx';
 import AIChat from './components/AIChat.jsx';
 import AlertModal from './components/AlertModal.jsx';
@@ -57,17 +57,17 @@ function App() {
     }
   };
 
-   const handlePlacementComplete = async (ships) => {
+  const handlePlacementComplete = async (ships) => {
     if (!placingPlayer) return;
     setIsLoading(true);
     setError(null);
     try {
       await placeShips(gameState.id, placingPlayer.id, ships);
-      
+
       if (gameMode === 'pvp') {
         // Encontra o primeiro jogador criado no jogo
         const firstPlayer = gameState.players.find(p => !p.is_ai);
-        
+
         // Compara o ID do jogador atual com o do primeiro jogador
         const isFirstPlayerTurn = placingPlayer.id === firstPlayer.id;
 
@@ -123,6 +123,21 @@ function App() {
     setError(null);
   };
 
+  const handleSurrender = async (playerId) => {
+    if (window.confirm('Tem certeza de que deseja se render?')) {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const updatedGameState = await surrenderGame(gameState.id, playerId);
+        setGameState(updatedGameState);
+      } catch (err) {
+        setError("Erro ao se render. O oponente pode ter bloqueado nossos sistemas!");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return <p className="text-accent animate-pulse">Carregando Missão...</p>;
@@ -135,6 +150,16 @@ function App() {
     }
 
     switch (gamePhase) {
+      case 'battle':
+        if (!gameState) {
+          return <p className="text-accent animate-pulse">Preparando para a Batalha...</p>;
+        }
+        return <BattleScreen
+                  gameState={gameState}
+                  onFireShot={handleFireShot}
+                  gameMode={gameMode}
+                  onSurrender={handleSurrender}
+                />;
       case 'nameEntry':
         return <NameEntryScreen gameMode={gameMode} onNamesSubmitted={handleNamesSubmitted} />;
       case 'placing':
@@ -142,11 +167,6 @@ function App() {
           return <p className="text-accent animate-pulse">Carregando Dados do Jogador...</p>;
         }
         return <SetupScreen key={placingPlayer.id} player={placingPlayer} onPlacementComplete={handlePlacementComplete} onShowAlert={handleShowAlert} />;
-      case 'battle':
-        if (!gameState) {
-          return <p className="text-accent animate-pulse">Preparando para a Batalha...</p>;
-        }
-        return <BattleScreen gameState={gameState} onFireShot={handleFireShot} gameMode={gameMode} />;
       case 'menu':
       default:
         return <StartMenu onStartGame={handleStartGame} />;
@@ -158,14 +178,14 @@ function App() {
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
       <div className="max-w-7xl mx-auto text-center">
         <div className="absolute top-4 right-4 z-50">
-          <button 
+          <button
             onClick={() => setShowHelp(true)}
             className="text-accent text-3xl font-bold hover:text-white transition-colors"
           >
             ?
           </button>
         </div>
-        
+
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-white tracking-widest">BATALHA-NAVAL</h1>
           <p className="text-accent mt-2">O CLÁSSICO JOGO BATALHA NAVAL</p>

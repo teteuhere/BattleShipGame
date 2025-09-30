@@ -60,3 +60,16 @@ export const chatWithAI = async (message) => {
     throw error;
   }
 };
+
+export const surrenderGame = async (gameId, playerId) => {
+  try {
+    const payload = {
+      player_id: playerId,
+    };
+    const response = await axios.post(`${API_URL}/games/${gameId}/surrender/`, payload);
+    return response.data;
+  } catch (error) {
+    console.error("Error surrendering game:", error);
+    throw error;
+  }
+};
