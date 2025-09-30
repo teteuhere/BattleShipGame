@@ -5,14 +5,14 @@ class Game(models.Model):
     status = models.CharField(max_length=20, default='placing_ships')
     created_at = models.DateTimeField(auto_now_add=True)
     current_turn = models.ForeignKey(
-        'game.Player',
+        'backend.Player',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='+'
     )
     winner = models.ForeignKey(
-        'game.Player',
+        'backend.Player',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

@@ -1,6 +1,6 @@
 # /game/views/surrender_view.py
 
-from game.serializers.game_serializer import GameSerializer
+from backend.serializers.game_serializer import GameSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status

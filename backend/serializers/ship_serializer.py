@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from game.models import Ship
+from backend.models import Ship
 
 class ShipSerializer(serializers.ModelSerializer):
     class Meta:

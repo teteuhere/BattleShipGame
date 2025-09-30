@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from game.models import Player
-from .ship_serializer import ShipSerializer 
+from backend.models import Player
+from .ship_serializer import ShipSerializer
 
 class PlayerSerializer(serializers.ModelSerializer):
     ships = ShipSerializer(many=True, read_only=True)

@@ -2,7 +2,7 @@ from django.db import models
 
 class Player(models.Model):
     game = models.ForeignKey(
-        'game.Game',
+        'backend.Game',
         related_name='players',
         on_delete=models.CASCADE
     )

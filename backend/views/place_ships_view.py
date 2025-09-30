@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from game.models import Player, Ship
-import random 
+from backend.models import Player, Ship
+import random
 
 # Este endpoint é onde os jogadores posicionam seus navios no tabuleiro.
 # A mágica aqui é que mesmo que o jogador selecione uma posição inválida,
@@ -28,7 +28,7 @@ class PlaceShipsView(APIView):
 
             for ship_data in ships_data:
                 original_coords = [tuple(c) for c in ship_data.get('coordinates')]
-                
+
                 valid_placement_found = False
                 for _ in range(10):
                     offset_row = random.randint(-1, 1)
@@ -42,7 +42,7 @@ class PlaceShipsView(APIView):
                         final_coords = new_coords
                         valid_placement_found = True
                         break
-                
+
                 if not valid_placement_found:
                     final_coords = original_coords
 

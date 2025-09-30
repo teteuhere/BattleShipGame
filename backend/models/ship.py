@@ -4,7 +4,7 @@ from django.db import models
 
 class Ship(models.Model):
     player = models.ForeignKey(
-        'game.Player',
+        'backend.Player',
         related_name='ships',
         on_delete=models.CASCADE
     )
@@ -13,4 +13,4 @@ class Ship(models.Model):
 
     @property
     def is_sunk(self):
-        return self.hits.count() >= len(self.coordinates)
+        return self.hits.filter(is_hit=True).count() >= len(self.coordinates)
