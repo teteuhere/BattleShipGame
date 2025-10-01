@@ -36,17 +36,17 @@ def trigger_ai_turn(game):
         "Do not add any other text. A clever coordinate to shoot at would be:"
     )
 
-    try:
-        ollama_url = "http://ollama:11434/api/generate"
-        payload = {
-            "model": "gemma:2b",  # Using a much faster model
-            "prompt": prompt,
-            "stream": False,
-            "format": "json"
-        }
+    payload = {
+        "model": "gemma:2b",
+        "prompt": prompt,
+        "stream": False,
+        "format": "json"
+    }
+    ollama_url = "http://ollama:11434/api/generate"
 
+    try:
         response = requests.post(ollama_url, json=payload, timeout=60)
-        response.raise_for_status()
+        response.raise_for_status()  # Raises HTTPError for bad responses (4xx or 5xx)
 
         response_text = response.json().get('response', '{}')
         ai_move = json.loads(response_text)
@@ -65,7 +65,16 @@ def trigger_ai_turn(game):
         ai_shot_result = process_shot(game, ai_player, ai_coordinates)
         return {"coordinates": ai_coordinates, "result": ai_shot_result}
 
+    except requests.exceptions.HTTPError as e:
+        error_details = e.response.json().get('error', str(e))
+        if 'model' in error_details and 'not found' in error_details:
+            return {"error": f"The AI model '{payload['model']}' was not found in Ollama. Please make sure it's pulled."}
+        return {"error": f"The AI service returned an HTTP error: {error_details}"}
+    except requests.exceptions.ConnectionError:
+        return {"error": f"Could not connect to the AI service at {ollama_url}. Is the Ollama container running?"}
+    except requests.exceptions.Timeout:
+        return {"error": "The request to the AI service timed out. The AI might be taking too long to think."}
     except requests.exceptions.RequestException as e:
-        return {"error": f"Could not connect to the AI service: {e}"}
+        return {"error": f"An unexpected error occurred with the AI service: {e}"}
     except json.JSONDecodeError:
         return {"error": "The AI returned a response that was not valid JSON."}

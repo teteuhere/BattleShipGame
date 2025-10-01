@@ -2,11 +2,6 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8000/api';
 
-// Prepara os dados e envia para o backend iniciar um novo jogo.
-// Manda para o backend o layout final dos navios do jogador.
-// Envia as coordenadas do disparo para o backend e retorna o novo estado do jogo.
-// Comunica diretamente com a IA para uma conversa.
-
 export const createGame = async (gameMode, playerNames) => {
   try {
     const payload = {
@@ -72,4 +67,15 @@ export const surrenderGame = async (gameId, playerId) => {
     console.error("Error surrendering game:", error);
     throw error;
   }
+};
+
+// New function to get the leaderboard
+export const getLeaderboard = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/leaderboard/`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching leaderboard:", error);
+        throw error;
+    }
 };

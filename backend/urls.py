@@ -5,7 +5,8 @@ from .views import (
     PlaceShipsView,
     FireShotView,
     AIChatView,
-    SurrenderView
+    SurrenderView,
+    LeaderboardView
 )
 
 urlpatterns = [
@@ -15,4 +16,5 @@ urlpatterns = [
     path('games/<int:pk>/fire/', FireShotView.as_view(), name='fire_shot'),
     path('chat-ai/', AIChatView.as_view(), name='chat_ai'),
     path('games/<int:pk>/surrender/', SurrenderView.as_view(), name='surrender'),
+    path('leaderboard/', LeaderboardView.as_view(), name='leaderboard'), # Add this new URL
 ]

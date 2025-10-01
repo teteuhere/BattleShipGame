@@ -1,10 +1,6 @@
 import React, { useMemo } from 'react';
 import GameBoard from './GameBoard.jsx';
 
-// Lógica para desenhar o tabuleiro de cada jogador.
-// Regras de exibição: no modo PvA e quando o jogo termina, mostramos o seu tabuleiro.
-// O radar inimigo está sempre visível.
-
 function BattleScreen({ gameState, onFireShot, gameMode, onSurrender}) {
   const { currentPlayer, opponentPlayer } = useMemo(() => {
     if (!gameState || !gameState.current_turn) {
@@ -99,7 +95,7 @@ function BattleScreen({ gameState, onFireShot, gameMode, onSurrender}) {
       {!gameState.winner && (
           <button
               onClick={() => onSurrender(currentPlayer.id)}
-              className="mt-8 bg-red-600 text-white font-bold py-2 px-6 rounded-md hover:bg-red-700 transition-colors"
+              className="mt-8 bg-slate/30 text-slate font-bold py-2 px-6 rounded-md border border-slate hover:bg-red-800 hover:text-white hover:border-red-700 transition-colors"
           >
               Enviar Rendição
           </button>

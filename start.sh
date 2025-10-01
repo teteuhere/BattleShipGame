@@ -3,9 +3,10 @@
 # 1. Derruba containers antigos para uma limpeza completa.
 # 2. Reconstrói as imagens para garantir que estão atualizadas.
 # 3. Sobe todos os serviços em background (banco de dados, backend, IA).
-# 4. AGUARDA o banco de dados estar 100% pronto.
-# 5. Roda as migrações do Django para construir o banco de dados.
-# 6. Prepara e inicia o servidor de desenvolvimento do frontend.
+# 4. AGUARDA que os serviços de IA e Banco de Dados estejam 100% prontos.
+# 5. Baixa o modelo da IA, se necessário.
+# 6. Roda as migrações do Django para construir o banco de dados.
+# 7. Prepara e inicia o servidor de desenvolvimento do frontend.
 
 # --- CORES PARA DEIXAR O TERMINAL BONITÃO ---
 GREEN='\033[0;32m'
@@ -17,6 +18,15 @@ docker-compose down
 
 echo -e "${YELLOW}Reconstruindo e implantando os navios (containers)...${NC}"
 docker-compose up -d --build
+
+echo -e "${YELLOW}Aguardando o serviço de IA (ollama_ai) ficar online...${NC}"
+until curl -s http://localhost:11434/ > /dev/null; do
+    echo "Ollama ainda não está pronto, aguardando..."
+    sleep 2
+done
+
+echo -e "${GREEN}Ollama está pronto! Garantindo que o modelo de IA 'gemma:2b' esteja disponível...${NC}"
+docker-compose exec ollama ollama pull gemma:2b
 
 echo -e "${YELLOW}Aguardando o banco de dados (mysql_db) ficar 100% operacional...${NC}"
 # Este loop espera até que o container do banco de dados esteja saudável
@@ -38,6 +48,6 @@ echo "Instalando as dependências do frontend (npm install)..."
 npm install
 
 echo "Ligando o servidor do frontend (npm run dev)..."
-npm run dev
+npm run dev -- --host
 
 echo -e "${GREEN}Todos a bordo! A aplicação está no ar em http://localhost:5173${NC}"

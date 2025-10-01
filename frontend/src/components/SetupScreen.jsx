@@ -1,34 +1,55 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import GameBoard from './GameBoard.jsx';
+import React, { useState, useMemo, useEffect } from "react";
+import GameBoard from "./GameBoard.jsx";
 
 const SHIPS_TO_PLACE = [
-    { name: 'Porta-aviões', length: 5 },
-    { name: 'Navio-tanque', length: 4 },
-    { name: 'Cruzador', length: 3 },
-    { name: 'Submarino', length: 3 },
-    { name: 'Destruidor', length: 2 },
+  { name: "Porta-aviões", length: 5 },
+  { name: "Navio-tanque", length: 4 },
+  { name: "Cruzador", length: 3 },
+  { name: "Submarino", length: 3 },
+  { name: "Destruidor", length: 2 },
 ];
-  
+
 function SetupScreen({ player, onPlacementComplete, onShowAlert }) {
   const [currentShipIndex, setCurrentShipIndex] = useState(0);
-  const [orientation, setOrientation] = useState('horizontal');
+  const [orientation, setOrientation] = useState("horizontal");
   const [placedShips, setPlacedShips] = useState([]);
 
   useEffect(() => {
     setCurrentShipIndex(0);
     setPlacedShips([]);
-    setOrientation('horizontal');
+    setOrientation("horizontal");
   }, [player]);
 
-  const grid = useMemo(() => {
-    const newGrid = Array(10).fill(null).map(() => 
-      Array(10).fill(null).map(() => ({ state: 'empty', hasShip: false }))
-    );
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Control") {
+        event.preventDefault();
+        setOrientation((currentOrientation) =>
+          currentOrientation === "horizontal" ? "vertical" : "horizontal"
+        );
+      }
+    };
 
-    placedShips.forEach(ship => {
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  const grid = useMemo(() => {
+    const newGrid = Array(10)
+      .fill(null)
+      .map(() =>
+        Array(10)
+          .fill(null)
+          .map(() => ({ state: "empty", hasShip: false }))
+      );
+
+    placedShips.forEach((ship) => {
       ship.coordinates.forEach(([row, col]) => {
         if (newGrid[row] && newGrid[row][col]) {
-            newGrid[row][col].hasShip = true;
+          newGrid[row][col].hasShip = true;
         }
       });
     });
@@ -43,59 +64,84 @@ function SetupScreen({ player, onPlacementComplete, onShowAlert }) {
     let startRow = row;
     let startCol = col;
 
-    if (orientation === 'horizontal' && col + currentShip.length > 10) {
-        startCol = 10 - currentShip.length;
+    if (orientation === "horizontal" && col + currentShip.length > 10) {
+      startCol = 10 - currentShip.length;
     }
-    if (orientation === 'vertical' && row + currentShip.length > 10) {
-        startRow = 10 - currentShip.length;
+    if (orientation === "vertical" && row + currentShip.length > 10) {
+      startRow = 10 - currentShip.length;
     }
 
     const newShipCoordinates = [];
     for (let i = 0; i < currentShip.length; i++) {
-        const newRow = orientation === 'vertical' ? startRow + i : startRow;
-        const newCol = orientation === 'horizontal' ? startCol + i : startCol;
+      const newRow = orientation === "vertical" ? startRow + i : startRow;
+      const newCol = orientation === "horizontal" ? startCol + i : startCol;
 
-        if (grid[newRow][newCol].hasShip) {
-            onShowAlert("Posicionamento inválido: os navios não podem se sobrepor!");
-            return;
-        }
-        newShipCoordinates.push([newRow, newCol]);
+      if (grid[newRow][newCol].hasShip) {
+        onShowAlert(
+          "Posicionamento inválido: os navios não podem se sobrepor!"
+        );
+        return;
+      }
+      newShipCoordinates.push([newRow, newCol]);
     }
 
-    setPlacedShips([...placedShips, { ship_type: currentShip.name, coordinates: newShipCoordinates }]);
+    setPlacedShips([
+      ...placedShips,
+      { ship_type: currentShip.name, coordinates: newShipCoordinates },
+    ]);
     setCurrentShipIndex(currentShipIndex + 1);
   };
-  
+
   const allShipsPlaced = currentShipIndex >= SHIPS_TO_PLACE.length;
 
   return (
     <div className="flex flex-col items-center gap-8 animate-fade-in">
       <div>
-        {}
         <p className="text-xl text-light-slate mb-2">Turno: {player.name}</p>
         <h2 className="text-2xl text-accent mb-2">
-          {allShipsPlaced ? "Frota posicionada!" : `Posicionando: ${SHIPS_TO_PLACE[currentShipIndex].name}`}
+          {allShipsPlaced
+            ? "Frota posicionada!"
+            : `Posicionando: ${SHIPS_TO_PLACE[currentShipIndex].name}`}
         </h2>
-        <p className="text-slate">Clique no tabuleiro para posicionar seus navios.</p>
+        <p className="text-slate">
+          Clique no tabuleiro para posicionar seus navios.
+        </p>
       </div>
 
-      <GameBoard 
-        grid={grid} 
+      <GameBoard
+        grid={grid}
         onCellClick={handleCellClick}
         isInteractive={true}
-       />
+      />
 
       <div className="flex gap-4 mt-4">
+        {/* <<<--- THIS BUTTON HAS BEEN UPDATED! ---<<< */}
         <button
-          onClick={() => setOrientation(o => o === 'horizontal' ? 'vertical' : 'horizontal')}
-          className="bg-light-navy text-white font-bold py-2 px-4 rounded"
+          onClick={() =>
+            setOrientation((o) =>
+              o === "horizontal" ? "vertical" : "horizontal"
+            )
+          }
+          className="bg-light-navy text-white font-bold py-2 px-4 rounded flex items-center gap-2"
         >
-          Rotacionar ({orientation === 'horizontal' ? 'Horizontal' : 'Vertical'})
+          <span>
+            Rotacionar (
+            {orientation === "horizontal" ? "Horizontal" : "Vertical"})
+          </span>
+          <kbd className="bg-slate/50 text-accent text-xs font-mono p-1 rounded-md border-b-2 border-slate/80">
+            CTRL
+          </kbd>
         </button>
+        {/* --- END OF BUTTON UPDATE --->>> */}
+
         <button
           onClick={() => onPlacementComplete(placedShips)}
           disabled={!allShipsPlaced}
-          className={`font-bold py-2 px-4 rounded ${!allShipsPlaced ? 'bg-slate/20 text-slate/50 cursor-not-allowed' : 'bg-accent text-navy'}`}
+          className={`font-bold py-2 px-4 rounded ${
+            !allShipsPlaced
+              ? "bg-slate/20 text-slate/50 cursor-not-allowed"
+              : "bg-accent text-navy"
+          }`}
         >
           Confirmar Posicionamento
         </button>
