@@ -1,14 +1,20 @@
 # 🔥 Battleship: AI Edition 🔥
 
-Welcome to Battleship: AI Edition\! This is a classic game of Battleship with a modern twist. The project features a full-stack application with a Django backend that powers the game logic, a React frontend for an interactive user experience, and a powerful AI opponent driven by the Deepseek model running through Ollama. The entire application is containerized with Docker for easy setup and deployment.
+Welcome to Battleship: AI Edition! This is a classic game of Battleship with a modern twist, now supercharged with multiple game modes and strategic abilities. The project features a full-stack application with a Django backend that powers the game logic, a React frontend for an interactive user experience, and a powerful AI opponent driven by the Ollama framework. The entire application is containerized with Docker for easy setup and deployment.
 
 ## ✨ Features
 
-  * **Classic Battleship Gameplay**: A fully implemented game of Battleship.
-  * **AI Opponent**: Play against a smart AI powered by the Deepseek language model.
-  * **Modern Tech Stack**: Built with Django, React, and Docker for a robust and scalable application.
-  * **RESTful API**: A clean and well-structured API to manage the game state.
-  * **Containerized Environment**: Easy to set up and run on any machine with Docker.
+* **Classic Battleship Gameplay**: The timeless naval strategy game you know and love.
+* **Player vs. Player (PvP)**: Battle against a friend on the same machine.
+* **Player vs. AI (PvA)**: Test your skills against a smart AI opponent.
+* **"Hunter-Killer" AI**: The AI uses an advanced strategy. Once it scores a hit, it intelligently hunts in adjacent cells to sink the ship before searching elsewhere.
+* **New Game Mode: Salvo**: A chaotic and fast-paced mode where players fire a number of shots equal to their number of surviving ships.
+* **Power-Up System (Optional)**: Spice up your matches with three unique, one-time-use abilities:
+    * **✈️ Scout Plane**: Reveals a random 2x2 area of the enemy's grid.
+    * **🚀 Torpedo**: Fires a shot that travels across an entire row or column, hitting the first ship in its path.
+    * **⚡ EMP Blast**: Disables your opponent's systems, forcing them to miss a turn.
+* **Leaderboard**: A Hall of Fame that tracks and displays the top commanders by their total wins.
+* **Containerized Environment**: Easy to set up and run on any machine with Docker using a single command.
 
 -----
 
@@ -16,101 +22,61 @@ Welcome to Battleship: AI Edition\! This is a classic game of Battleship with a 
 
 This project is built with a powerful and modern set of technologies:
 
-  * **Backend**: Python, Django, Django REST Framework
-  * **Frontend**: JavaScript, React, Vite
-  * **Database**: MySQL
-  * **AI Engine**: Ollama with the Deepseek model
-  * **Containerization**: Docker, Docker Compose
+* **Backend**: Python, Django, Django REST Framework
+* **Frontend**: JavaScript, React, Vite, Tailwind CSS
+* **Database**: MySQL
+* **AI Engine**: Ollama (running the `gemma:2b` model)
+* **Containerization**: Docker, Docker Compose
 
 -----
 
 ## 🚀 Getting Started
 
-Follow these instructions to get the project up and running on your local machine.
+Follow these simple instructions to get the project up and running on your local machine.
 
 ### Prerequisites
 
-Make sure you have the following software installed on your system:
+Make sure you have **Docker** and **Docker Compose** installed on your system.
 
-  * **Docker** and **Docker Compose**: To run the containerized application.
-  * **Node.js** and **npm**: To manage the frontend dependencies and run the development server.
+### Running the Application with One Command
 
-### 1\. Clone the Repository
+This project includes an automated script that handles the entire setup process for you, from building the containers to running the database migrations and starting the frontend server.
 
-First, clone this repository to your local machine.
+1.  **Clone the Repository**
+    ```bash
+    git clone <your-repository-url>
+    cd BattleShipGame
+    ```
 
-```bash
-git clone <your-repository-url>
-cd BattleShipGame
-```
+2.  **Run the Start Script**
+    Open your terminal, navigate to the project's root directory, and run the following command:
 
-### 2\. Initial Setup (First Time Only)
+    ```bash
+    ./start.sh
+    ```
+    This script will:
+    * Stop any old running containers.
+    * Build the new Docker images.
+    * Start all services (Django, MySQL, Ollama).
+    * Automatically download the required AI model.
+    * Apply all necessary database migrations.
+    * Install frontend dependencies and launch the Vite development server.
 
-The first time you run the project, you need to build the Docker images and set up the database.
+### 4. You're Ready to Play!
 
-```bash
-# Build the images and start the containers in the background
-docker-compose up --build -d
+With the script running, open your browser and navigate to the URL provided in the terminal (usually `http://localhost:5173`). Have fun!
 
-# Apply the database migrations to create the necessary tables
-docker-compose exec web python manage.py migrate
-```
+---
 
-### 3\. Running the Application
+### Manual Docker Commands (Optional)
 
-Once the initial setup is complete, you can use these commands to manage the application.
+If you prefer to manage the services manually:
 
-#### **Starting the Docker Services**
-To build the services, run:
-
-```bash
-docker-compose up -d --build
-```
-
-To start all the backend services (Django, MySQL, Ollama) after they've been stopped, run:
-
-
-```bash
-docker-compose start
-```
-
-To start all the docker, run:
-
-```bash
-docker-compose exec web bash
-```
-
-#### **Starting the Frontend**
-
-The frontend runs in a separate development server. Open a **new terminal** for this.
-
-```bash
-# Navigate to the frontend directory
-cd frontend
-
-# Install dependencies (only needed once)
-npm install
-
-# Start the frontend development server
-npm run dev -- --host
-```
-
-#### **Stopping the Docker Services**
-
-To stop all the running Docker containers, use:
-
-```bash
-docker-compose stop
-```
-
-#### **Viewing Logs**
-
-If you need to see the output from your backend services (for debugging, etc.), you can run:
-
-```bash
-docker-compose logs -f
-```
-
-### 4\. You're Ready to Play\!
-
-With both the Docker services and the frontend server running, open your browser and navigate to the URL provided by Vite (usually `http://localhost:5173`). Have fun\!
+* **To stop all services**:
+    ```bash
+    docker-compose down
+    ```
+* **To view the logs from the backend**:
+    ```bash
+    docker-compose logs -f web
+    ```
