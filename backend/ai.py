@@ -5,9 +5,6 @@ from .models import Player, Shot
 from .logic import process_shot
 
 def trigger_ai_turn(game):
-    """
-    Constructs a prompt for the Ollama AI, gets its move, and processes it.
-    """
     try:
         ai_player = game.players.get(is_ai=True)
     except Player.DoesNotExist:
@@ -16,25 +13,46 @@ def trigger_ai_turn(game):
     ai_shots = Shot.objects.filter(player=ai_player).order_by('timestamp')
     shot_history = []
     already_shot_coords = []
+    last_hit = None
+
     for shot in ai_shots:
         result = "hit" if shot.is_hit else "miss"
         shot_history.append(f"- Shot at {shot.coordinates}: {result}")
-        # Use a tuple for faster checking later
         already_shot_coords.append(tuple(shot.coordinates))
+        if shot.is_hit:
+            last_hit = shot.coordinates
 
     shot_history_str = "\\n".join(shot_history)
     if not shot_history_str:
         shot_history_str = "You have not fired any shots yet."
 
-    prompt = (
+    # --- NEW ADVANCED PROMPT ---
+    strategy_prompt = (
         "You are a Battleship AI. The board is 10x10 (0-9). "
-        "Your goal is to sink the human's ships. "
+        "Your goal is to sink the human's ships using a 'hunter-killer' strategy."
+    )
+
+    if last_hit:
+        strategy_prompt += (
+            f" Your last shot at {last_hit} was a HIT. "
+            "Your next shot MUST be in an adjacent, un-shot cell (up, down, left, or right) to find the rest of the ship. "
+            "Prioritize adjacent cells before searching elsewhere."
+        )
+    else:
+        strategy_prompt += (
+            " You are in 'search' mode. Your last shot was a miss or you just started. "
+            "Make a logical guess in an area you haven't explored yet."
+        )
+
+    prompt = (
+        f"{strategy_prompt}\\n"
         "Here are your previous shots:\\n"
         f"{shot_history_str}\\n"
         f"Do not shoot at these coordinates again: {already_shot_coords}\\n"
         "Return your next shot as JSON, like {\"coordinates\": [x, y]}. "
-        "Do not add any other text. A clever coordinate to shoot at would be:"
+        "Do not add any other text. Your next target is:"
     )
+    # --- END OF NEW PROMPT ---
 
     payload = {
         "model": "gemma:2b",
@@ -46,7 +64,7 @@ def trigger_ai_turn(game):
 
     try:
         response = requests.post(ollama_url, json=payload, timeout=60)
-        response.raise_for_status()  # Raises HTTPError for bad responses (4xx or 5xx)
+        response.raise_for_status()
 
         response_text = response.json().get('response', '{}')
         ai_move = json.loads(response_text)

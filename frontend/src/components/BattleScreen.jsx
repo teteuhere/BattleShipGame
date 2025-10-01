@@ -1,69 +1,106 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import GameBoard from './GameBoard.jsx';
 
-function BattleScreen({ gameState, onFireShot, gameMode, onSurrender}) {
-  const { currentPlayer, opponentPlayer } = useMemo(() => {
-    if (!gameState || !gameState.current_turn) {
-      return { currentPlayer: null, opponentPlayer: null };
-    }
-    const current = gameState.players.find(p => p.id === gameState.current_turn);
-    const opponent = gameState.players.find(p => p.id !== gameState.current_turn);
-    return { currentPlayer: current, opponentPlayer: opponent };
+function BattleScreen({ gameState, onFireShot, onSurrender, currentPlayer, onShowAbilities, targetingMode, onRowOrColClick, scoutedCells, torpedoPath }) {
+  const [salvoTargets, setSalvoTargets] = useState([]);
+
+  const { opponentPlayer } = useMemo(() => {
+    if (!gameState || !gameState.current_turn) return { opponentPlayer: null };
+    return { opponentPlayer: gameState.players.find(p => p.id !== gameState.current_turn) };
   }, [gameState]);
 
-  const shotsByPlayer = useMemo(() => {
-      const shots = {};
-      if (!gameState || !gameState.players) return shots;
-      for (const player of gameState.players) {
-          shots[player.id] = [];
-      }
-      gameState.shots?.forEach(shot => {
-          if (shots[shot.player]) {
-              shots[shot.player].push(shot);
-          }
-      });
-      return shots;
-  }, [gameState]);
+  // Reset salvo targets when the turn changes
+  useEffect(() => {
+    setSalvoTargets([]);
+  }, [currentPlayer]);
 
   if (!currentPlayer || !opponentPlayer) {
     return <p className="text-accent animate-pulse">Loading Battle Data...</p>;
   }
 
+  const isSalvoMode = gameState.game_mode === 'salvo';
+  const shipsLeft = useMemo(() => {
+    return currentPlayer.ships.filter(ship => !ship.is_sunk).length;
+  }, [currentPlayer]);
+  const shotsAllowed = isSalvoMode ? shipsLeft : 1;
+
+  const handleCellClick = (row, col) => {
+    if (isSalvoMode) {
+      const targetKey = `${row}-${col}`;
+      const isAlreadySelected = salvoTargets.some(t => `${t[0]}-${t[1]}` === targetKey);
+
+      if (isAlreadySelected) {
+        setSalvoTargets(salvoTargets.filter(t => `${t[0]}-${t[1]}` !== targetKey));
+      } else {
+        if (salvoTargets.length < shotsAllowed) {
+          setSalvoTargets([...salvoTargets, [row, col]]);
+        }
+      }
+    } else {
+      // Classic mode, fire immediately
+      onFireShot([[row, col]]);
+    }
+  };
+
+  const handleFireSalvo = () => {
+    onFireShot(salvoTargets);
+    setSalvoTargets([]);
+  };
+
   const buildGrid = (player, opponentShots, showShips = false) => {
-    const grid = Array(10).fill(null).map(() =>
-        Array(10).fill(null).map(() => ({ state: 'empty', hasShip: false }))
-    );
+    const grid = Array(10).fill(null).map(() => Array(10).fill(null).map(() => ({ state: 'empty', hasShip: false })));
     if (showShips) {
-        player.ships?.forEach(ship => {
-            ship.coordinates.forEach(([row, col]) => {
-                if (grid[row] && grid[row][col]) grid[row][col].hasShip = true;
-            });
+      player.ships?.forEach(ship => {
+        ship.coordinates.forEach(([row, col]) => {
+          if (grid[row] && grid[row][col]) grid[row][col].hasShip = true;
         });
+      });
     }
     opponentShots?.forEach(shot => {
-        const [row, col] = shot.coordinates;
-        if (grid[row] && grid[row][col]) {
-            grid[row][col].state = shot.is_hit ? 'hit' : 'miss';
-        }
+      const [row, col] = shot.coordinates;
+      if (grid[row] && grid[row][col]) {
+        grid[row][col].state = shot.is_hit ? 'hit' : 'miss';
+      }
     });
     return grid;
   };
 
-  const yourGrid = buildGrid(currentPlayer, shotsByPlayer[opponentPlayer.id] || [], true);
+  const shotsByPlayer = useMemo(() => {
+    const shots = {};
+    gameState.players.forEach(p => shots[p.id] = []);
+    gameState.shots?.forEach(shot => {
+      if (shots[shot.player]) {
+        shots[shot.player].push(shot);
+      }
+    });
+    return shots;
+  }, [gameState]);
+
   const opponentGrid = buildGrid(opponentPlayer, shotsByPlayer[currentPlayer.id] || [], !!gameState.winner);
 
   const isHumanTurn = currentPlayer && !currentPlayer.is_ai;
+  const isEmpd = gameState.emp_active_on_player === currentPlayer?.id;
 
   let statusMessage;
   if (gameState.winner) {
     statusMessage = `FIM DE JOGO!`;
+  } else if (isEmpd) {
+    statusMessage = "Sistemas desativados por EMP! Você perdeu o turno.";
+  } else if (isSalvoMode) {
+    const targetsLeft = shotsAllowed - salvoTargets.length;
+    statusMessage = `MODO SALVO: Você tem ${shotsAllowed} disparos. Selecione mais ${targetsLeft} alvos.`;
+    if (targetsLeft === 0) {
+      statusMessage = `MODO SALVO: ${shotsAllowed} alvos selecionados. Pronto para disparar!`;
+    }
+  } else if (targetingMode === 'torpedo_row') {
+    statusMessage = "Alvo do Torpedo: Selecione uma LINHA para atacar.";
+  } else if (targetingMode === 'torpedo_col') {
+    statusMessage = "Alvo do Torpedo: Selecione uma COLUNA para atacar.";
   } else if (isHumanTurn) {
-    statusMessage = "Aguardando ordens comandante! Clique em um ponto no radar para disparar.";
+    statusMessage = "Aguardando ordens! Clique no radar para disparar ou use uma habilidade.";
   } else {
-    statusMessage = `${currentPlayer.name} is thinking...`;
+    statusMessage = `${currentPlayer.name} está pensando...`;
   }
-
-  const isPvaMode = gameMode === 'pva';
 
   return (
     <div className="w-full flex flex-col items-center animate-fade-in">
@@ -73,33 +110,48 @@ function BattleScreen({ gameState, onFireShot, gameMode, onSurrender}) {
         </h2>
         <p className="text-slate mt-1">{statusMessage}</p>
       </div>
-
       <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-16">
-        {(isPvaMode || gameState.winner) && (
-          <div>
-            <h3 className="text-xl text-white mb-4">SUA FROTA ({currentPlayer.name})</h3>
-            <GameBoard grid={yourGrid} />
-          </div>
-        )}
-
         <div>
           <h3 className="text-xl text-white mb-4">RADAR INIMIGO ({opponentPlayer.name})</h3>
           <GameBoard
             grid={opponentGrid}
-            onCellClick={onFireShot}
-            isInteractive={isHumanTurn && !gameState.winner}
+            onCellClick={handleCellClick}
+            isInteractive={isHumanTurn && !gameState.winner && !targetingMode && !isEmpd}
+            scoutedCells={scoutedCells}
+            torpedoPath={torpedoPath}
+            targetingMode={targetingMode}
+            onRowOrColClick={onRowOrColClick}
+            salvoTargets={salvoTargets}
           />
         </div>
       </div>
-
-      {!gameState.winner && (
+      <div className="mt-8 flex gap-4 items-center">
+        {isSalvoMode && isHumanTurn && !gameState.winner && salvoTargets.length === shotsAllowed && (
           <button
-              onClick={() => onSurrender(currentPlayer.id)}
-              className="mt-8 bg-slate/30 text-slate font-bold py-2 px-6 rounded-md border border-slate hover:bg-red-800 hover:text-white hover:border-red-700 transition-colors"
+            onClick={handleFireSalvo}
+            className="font-bold py-2 px-6 rounded-md border transition-colors bg-red-500/30 text-red-300 border-red-400 hover:bg-red-500 hover:text-white"
           >
-              Enviar Rendição
+            Disparar Salvo! ({shotsAllowed})
           </button>
-      )}
+        )}
+        {gameState.power_ups_enabled && isHumanTurn && !gameState.winner && !isEmpd && (
+          <button
+            onClick={onShowAbilities}
+            className="font-bold py-2 px-6 rounded-md border transition-colors bg-amber-500/30 text-amber-300 border-amber-400 hover:bg-amber-500 hover:text-white"
+            title="Abrir seu arsenal de habilidades"
+          >
+            💥 Arsenal
+          </button>
+        )}
+        {!gameState.winner && (
+          <button
+            onClick={() => onSurrender(currentPlayer.id)}
+            className="bg-slate/30 text-slate font-bold py-2 px-6 rounded-md border border-slate hover:bg-red-800 hover:text-white hover:border-red-700 transition-colors"
+          >
+            Enviar Rendição
+          </button>
+        )}
+      </div>
     </div>
   );
 }

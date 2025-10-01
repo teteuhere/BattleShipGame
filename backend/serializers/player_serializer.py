@@ -7,4 +7,4 @@ class PlayerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Player
-        fields = ['id', 'game', 'name', 'is_ai', 'ships', 'hits', 'misses'] # Add stats here
+        fields = ['id', 'game', 'name', 'is_ai', 'ships', 'hits', 'misses', 'used_scout_plane', 'used_torpedo', 'used_emp']
