@@ -4,3 +4,4 @@ djangorestframework
 mysqlclient
 requests
 locust
+django-cors-headers
