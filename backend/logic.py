@@ -2,18 +2,6 @@ from .models import Player, Shot, Ship
 from django.utils import timezone
 import random
 
-# Quando um disparo atinge o alvo, o sistema do jogo age!
-# O primeiro navio atingido causa uma reação em cadeia e afunda por completo.
-# Registramos cada tiro e o resultado na história do jogador.
-# Verificamos se a frota inimiga foi toda pro fundo do mar!
-# Se o tiro não acertou nada, registramos como um "tiro na água".
-
-# Esta função é a cereja do bolo! Ela define a estratégia para a IA,
-# posicionando seus navios de forma esperta para o combate.
-# O loop garante que os navios sempre sejam colocados em posições válidas,
-# sem saírem do mapa ou colidirem uns com os outros.
-
-
 def process_shot(game, firing_player, coordinates):
     try:
         opponent = game.players.exclude(id=firing_player.id).get()
@@ -32,7 +20,6 @@ def process_shot(game, firing_player, coordinates):
     if shot_is_a_hit:
         ships_to_sink = [hit_ship]
         processed_ids = {hit_ship.id}
-        
         i = 0
         while i < len(ships_to_sink):
             current_ship = ships_to_sink[i]
@@ -49,7 +36,7 @@ def process_shot(game, firing_player, coordinates):
                         if tuple(coord) in blast_radius:
                             ships_to_sink.append(other_ship)
                             processed_ids.add(other_ship.id)
-                            break 
+                            break
             i += 1
         total_hits = 0
         for ship in ships_to_sink:
@@ -69,7 +56,6 @@ def process_shot(game, firing_player, coordinates):
             result_message = {"result": "hit", "message": f"Reação em cadeia! Você afundou {len(ships_to_sink)} navios!"}
         else:
             result_message = {"result": "hit", "message": f"Você afundou o navio '{hit_ship.ship_type}' do oponente!"}
-    
     else:
         Shot.objects.create(
             game=game, player=firing_player, coordinates=coordinates,
@@ -83,6 +69,10 @@ def process_shot(game, firing_player, coordinates):
     return result_message
 
 def place_ai_ships(ai_player):
+    game = ai_player.game
+    board_width = game.board_width
+    board_height = game.board_height
+
     ships_to_place = {
         "carrier": 5,
         "battleship": 4,
@@ -90,7 +80,6 @@ def place_ai_ships(ai_player):
         "submarine": 3,
         "destroyer": 2,
     }
-    board_size = 10
     occupied_coords = set()
 
     for ship_type, length in ships_to_place.items():
@@ -98,12 +87,14 @@ def place_ai_ships(ai_player):
         while not placed:
             orientation = random.choice(['horizontal', 'vertical'])
             if orientation == 'horizontal':
-                start_row = random.randint(0, board_size - 1)
-                start_col = random.randint(0, board_size - length)
+                if board_width < length: continue
+                start_row = random.randint(0, board_height - 1)
+                start_col = random.randint(0, board_width - length)
                 ship_coords = [[start_row, start_col + i] for i in range(length)]
-            else: # vertical
-                start_row = random.randint(0, board_size - length)
-                start_col = random.randint(0, board_size - 1)
+            else:
+                if board_height < length: continue
+                start_row = random.randint(0, board_height - length)
+                start_col = random.randint(0, board_width - 1)
                 ship_coords = [[start_row + i, start_col] for i in range(length)]
 
             if not any(tuple(coord) in occupied_coords for coord in ship_coords):

@@ -1,3 +1,10 @@
+# Summary of changes:
+# A bug was fixed where, in 'Classic' mode, the game state was not being
+# refreshed after a shot was processed. This caused the turn-switching
+# logic to fail. By adding `game.refresh_from_db()` after the shot is
+# processed for Classic mode (just like it was for Salvo mode), we ensure
+# the view always has the latest data before correctly passing the turn
+# to the opponent.
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -38,7 +45,6 @@ class FireShotView(APIView):
 
             shot_results = []
             if game.game_mode == 'salvo':
-                # --- THIS IS THE CORRECTED LOGIC ---
                 all_player_ships = player.ships.all()
                 num_ships_left = sum(1 for ship in all_player_ships if not ship.is_sunk)
 
@@ -54,6 +60,9 @@ class FireShotView(APIView):
             else: # Classic mode
                 result = process_shot(game, player, coordinates_list[0])
                 shot_results.append(result)
+                # --- THIS IS THE FIX ---
+                game.refresh_from_db()
+                # --- END OF FIX ---
 
             if game.status != 'finished':
                 opponent = game.players.exclude(id=player.id).get()

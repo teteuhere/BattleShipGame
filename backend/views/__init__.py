@@ -5,4 +5,6 @@ from .fire_shot_view import FireShotView
 from .ai_chat_view import AIChatView
 from .surrender_view import SurrenderView
 from .leaderboard_view import LeaderboardView
-from .use_ability_view import UseAbilityView 
+from .use_ability_view import UseAbilityView
+from .join_game_view import JoinGameView
+from .create_online_game_view import CreateOnlineGameView

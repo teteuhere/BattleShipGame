@@ -5,8 +5,9 @@
 # 3. Sobe todos os serviços em background (banco de dados, backend, IA).
 # 4. AGUARDA que os serviços de IA e Banco de Dados estejam 100% prontos.
 # 5. Baixa o modelo da IA, se necessário.
-# 6. Roda as migrações do Django para construir o banco de dados.
-# 7. Prepara e inicia o servidor de desenvolvimento do frontend.
+# 6. Limpa o cache do Python (.pyc) DENTRO do container para garantir que as novas alterações sejam aplicadas.
+# 7. Roda as migrações do Django para construir o banco de dados.
+# 8. Prepara e inicia o servidor de desenvolvimento do frontend.
 
 # --- CORES PARA DEIXAR O TERMINAL BONITÃO ---
 GREEN='\033[0;32m'
@@ -33,6 +34,10 @@ echo -e "${YELLOW}Aguardando o banco de dados (mysql_db) ficar 100% operacional.
 until [ "`docker inspect -f {{.State.Health.Status}} mysql_db`"=="healthy" ]; do
     sleep 1;
 done;
+
+# --- <<<<<< THIS IS THE CORRECTED COMMAND >>>>>> ---
+echo -e "${YELLOW}Limpando cache antigo do Python para garantir que o novo código seja usado...${NC}"
+docker-compose exec web find . -path ./frontend -prune -o -type d -name "__pycache__" -exec rm -rf {} +
 
 echo -e "${GREEN}Banco de dados pronto! Construindo a estrutura (executando as migrations)...${NC}"
 # Cria as "plantas" do banco de dados (se houver novas)

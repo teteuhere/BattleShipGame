@@ -10,6 +10,13 @@ class GameSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Game
-        # --- ADD 'game_mode' TO THE FIELDS ---
-        fields = ['id', 'status', 'game_mode', 'created_at', 'finished_at', 'current_turn', 'winner', 'players', 'shots', 'duration', 'power_ups_enabled', 'emp_active_on_player']
-        read_only_fields = ['status', 'created_at', 'players', 'shots', 'finished_at', 'winner', 'duration']
+        fields = [
+            'id', 'status', 'game_mode', 'game_code', 'created_at', 'finished_at',
+            'current_turn', 'winner', 'players', 'shots', 'duration',
+            'power_ups_enabled', 'emp_active_on_player',
+            'board_width', 'board_height'
+        ]
+        read_only_fields = [
+            'status', 'created_at', 'players', 'shots',
+            'finished_at', 'winner', 'duration'
+        ]

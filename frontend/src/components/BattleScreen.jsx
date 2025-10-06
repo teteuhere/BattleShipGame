@@ -1,25 +1,32 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import GameBoard from './GameBoard.jsx';
 
-function BattleScreen({ gameState, onFireShot, onSurrender, currentPlayer, onShowAbilities, targetingMode, onRowOrColClick, scoutedCells, torpedoPath }) {
+function BattleScreen({ gameState, onFireShot, onSurrender, currentPlayer, playerMode, localPlayerId, onShowAbilities, targetingMode, onRowOrColClick, scoutedCells, torpedoPath }) {
   const [salvoTargets, setSalvoTargets] = useState([]);
 
   const { opponentPlayer } = useMemo(() => {
-    if (!gameState || !gameState.current_turn) return { opponentPlayer: null };
-    return { opponentPlayer: gameState.players.find(p => p.id !== gameState.current_turn) };
-  }, [gameState]);
+    if (!gameState || !currentPlayer) return { opponentPlayer: null };
+    return { opponentPlayer: gameState.players.find(p => p.id !== currentPlayer.id) };
+  }, [gameState, currentPlayer]);
 
-  // Reset salvo targets when the turn changes
   useEffect(() => {
     setSalvoTargets([]);
   }, [currentPlayer]);
 
   if (!currentPlayer || !opponentPlayer) {
-    return <p className="text-accent animate-pulse">Loading Battle Data...</p>;
+    return <p className="text-accent animate-pulse">Carregando dados de batalha...</p>;
+  }
+
+  let isMyTurn;
+  if (playerMode === 'online') {
+    isMyTurn = currentPlayer.id === localPlayerId;
+  } else {
+    isMyTurn = !currentPlayer.is_ai;
   }
 
   const isSalvoMode = gameState.game_mode === 'salvo';
   const shipsLeft = useMemo(() => {
+    if (!currentPlayer.ships) return 0;
     return currentPlayer.ships.filter(ship => !ship.is_sunk).length;
   }, [currentPlayer]);
   const shotsAllowed = isSalvoMode ? shipsLeft : 1;
@@ -28,7 +35,6 @@ function BattleScreen({ gameState, onFireShot, onSurrender, currentPlayer, onSho
     if (isSalvoMode) {
       const targetKey = `${row}-${col}`;
       const isAlreadySelected = salvoTargets.some(t => `${t[0]}-${t[1]}` === targetKey);
-
       if (isAlreadySelected) {
         setSalvoTargets(salvoTargets.filter(t => `${t[0]}-${t[1]}` !== targetKey));
       } else {
@@ -37,7 +43,6 @@ function BattleScreen({ gameState, onFireShot, onSurrender, currentPlayer, onSho
         }
       }
     } else {
-      // Classic mode, fire immediately
       onFireShot([[row, col]]);
     }
   };
@@ -48,20 +53,22 @@ function BattleScreen({ gameState, onFireShot, onSurrender, currentPlayer, onSho
   };
 
   const buildGrid = (player, opponentShots, showShips = false) => {
-    const grid = Array(10).fill(null).map(() => Array(10).fill(null).map(() => ({ state: 'empty', hasShip: false })));
-    if (showShips) {
-      player.ships?.forEach(ship => {
+    const grid = Array(gameState.board_height).fill(null).map(() => Array(gameState.board_width).fill(null).map(() => ({ state: 'empty', hasShip: false })));
+    if (showShips && player.ships) {
+      player.ships.forEach(ship => {
         ship.coordinates.forEach(([row, col]) => {
           if (grid[row] && grid[row][col]) grid[row][col].hasShip = true;
         });
       });
     }
-    opponentShots?.forEach(shot => {
-      const [row, col] = shot.coordinates;
-      if (grid[row] && grid[row][col]) {
-        grid[row][col].state = shot.is_hit ? 'hit' : 'miss';
-      }
-    });
+    if(opponentShots) {
+        opponentShots.forEach(shot => {
+        const [row, col] = shot.coordinates;
+        if (grid[row] && grid[row][col]) {
+            grid[row][col].state = shot.is_hit ? 'hit' : 'miss';
+        }
+        });
+    }
     return grid;
   };
 
@@ -77,8 +84,6 @@ function BattleScreen({ gameState, onFireShot, onSurrender, currentPlayer, onSho
   }, [gameState]);
 
   const opponentGrid = buildGrid(opponentPlayer, shotsByPlayer[currentPlayer.id] || [], !!gameState.winner);
-
-  const isHumanTurn = currentPlayer && !currentPlayer.is_ai;
   const isEmpd = gameState.emp_active_on_player === currentPlayer?.id;
 
   let statusMessage;
@@ -86,18 +91,20 @@ function BattleScreen({ gameState, onFireShot, onSurrender, currentPlayer, onSho
     statusMessage = `FIM DE JOGO!`;
   } else if (isEmpd) {
     statusMessage = "Sistemas desativados por EMP! Você perdeu o turno.";
-  } else if (isSalvoMode) {
-    const targetsLeft = shotsAllowed - salvoTargets.length;
-    statusMessage = `MODO SALVO: Você tem ${shotsAllowed} disparos. Selecione mais ${targetsLeft} alvos.`;
-    if (targetsLeft === 0) {
-      statusMessage = `MODO SALVO: ${shotsAllowed} alvos selecionados. Pronto para disparar!`;
+  } else if (isMyTurn) {
+    if (isSalvoMode) {
+      const targetsLeft = shotsAllowed - salvoTargets.length;
+      statusMessage = `MODO SALVO: Você tem ${shotsAllowed} disparos. Selecione mais ${targetsLeft} alvos.`;
+      if (targetsLeft === 0) {
+        statusMessage = `MODO SALVO: ${shotsAllowed} alvos selecionados. Pronto para disparar!`;
+      }
+    } else if (targetingMode === 'torpedo_row') {
+      statusMessage = "Alvo do Torpedo: Selecione uma LINHA para atacar.";
+    } else if (targetingMode === 'torpedo_col') {
+      statusMessage = "Alvo do Torpedo: Selecione uma COLUNA para atacar.";
+    } else {
+      statusMessage = "Aguardando ordens! Clique no radar para disparar ou use uma habilidade.";
     }
-  } else if (targetingMode === 'torpedo_row') {
-    statusMessage = "Alvo do Torpedo: Selecione uma LINHA para atacar.";
-  } else if (targetingMode === 'torpedo_col') {
-    statusMessage = "Alvo do Torpedo: Selecione uma COLUNA para atacar.";
-  } else if (isHumanTurn) {
-    statusMessage = "Aguardando ordens! Clique no radar para disparar ou use uma habilidade.";
   } else {
     statusMessage = `${currentPlayer.name} está pensando...`;
   }
@@ -114,9 +121,10 @@ function BattleScreen({ gameState, onFireShot, onSurrender, currentPlayer, onSho
         <div>
           <h3 className="text-xl text-white mb-4">RADAR INIMIGO ({opponentPlayer.name})</h3>
           <GameBoard
+            gameState={gameState}
             grid={opponentGrid}
             onCellClick={handleCellClick}
-            isInteractive={isHumanTurn && !gameState.winner && !targetingMode && !isEmpd}
+            isInteractive={isMyTurn && !gameState.winner && !targetingMode && !isEmpd}
             scoutedCells={scoutedCells}
             torpedoPath={torpedoPath}
             targetingMode={targetingMode}
@@ -126,7 +134,7 @@ function BattleScreen({ gameState, onFireShot, onSurrender, currentPlayer, onSho
         </div>
       </div>
       <div className="mt-8 flex gap-4 items-center">
-        {isSalvoMode && isHumanTurn && !gameState.winner && salvoTargets.length === shotsAllowed && (
+        {isSalvoMode && isMyTurn && !gameState.winner && salvoTargets.length === shotsAllowed && (
           <button
             onClick={handleFireSalvo}
             className="font-bold py-2 px-6 rounded-md border transition-colors bg-red-500/30 text-red-300 border-red-400 hover:bg-red-500 hover:text-white"
@@ -134,7 +142,7 @@ function BattleScreen({ gameState, onFireShot, onSurrender, currentPlayer, onSho
             Disparar Salvo! ({shotsAllowed})
           </button>
         )}
-        {gameState.power_ups_enabled && isHumanTurn && !gameState.winner && !isEmpd && (
+        {gameState.power_ups_enabled && isMyTurn && !gameState.winner && !isEmpd && (
           <button
             onClick={onShowAbilities}
             className="font-bold py-2 px-6 rounded-md border transition-colors bg-amber-500/30 text-amber-300 border-amber-400 hover:bg-amber-500 hover:text-white"

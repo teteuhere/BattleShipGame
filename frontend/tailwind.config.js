@@ -13,6 +13,9 @@ export default {
         'light-slate': '#a8b2d1',
         'white': '#e6f1ff',
         'accent': '#64ffda',
+      },
+      gridTemplateColumns: {
+        '32': 'repeat(32, minmax(0, 1fr))',
       }
     },
   },

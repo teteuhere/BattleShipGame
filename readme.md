@@ -4,16 +4,34 @@ Welcome to Battleship: AI Edition! This is a classic game of Battleship with a m
 
 ## ✨ Features
 
-* **Classic Battleship Gameplay**: The timeless naval strategy game you know and love.
-* **Player vs. Player (PvP)**: Battle against a friend on the same machine.
-* **Player vs. AI (PvA)**: Test your skills against a smart AI opponent.
-* **"Hunter-Killer" AI**: The AI uses an advanced strategy. Once it scores a hit, it intelligently hunts in adjacent cells to sink the ship before searching elsewhere.
-* **New Game Mode: Salvo**: A chaotic and fast-paced mode where players fire a number of shots equal to their number of surviving ships.
-* **Power-Up System (Optional)**: Spice up your matches with three unique, one-time-use abilities:
-    * **✈️ Scout Plane**: Reveals a random 2x2 area of the enemy's grid.
-    * **🚀 Torpedo**: Fires a shot that travels across an entire row or column, hitting the first ship in its path.
-    * **⚡ EMP Blast**: Disables your opponent's systems, forcing them to miss a turn.
-* **Leaderboard**: A Hall of Fame that tracks and displays the top commanders by their total wins.
+* **Multiplayer & Single Player Modes**:
+    * **Online Multiplayer**: Create a game lobby and share a unique code to play with a friend on a different machine.
+    * **Local PvP**: Battle against a friend on the same machine with turn-switch screens for privacy.
+    * **Player vs. AI**: Test your skills against a smart AI opponent.
+
+* **Dynamic & Responsive Gameplay**:
+    * **Responsive Board**: The game automatically adapts its layout, offering a classic **10x10** board on mobile devices and an epic **32x8** widescreen board on desktops.
+    * **"Commit-to-Play" Online**: To ensure fair play, players in an online match cannot simply leave. The back button is disabled, and closing the browser tab will automatically trigger a surrender.
+
+* **Engaging Game Modes**:
+    * **Classic Mode**: The timeless naval strategy game you know and love. One shot per turn.
+    * **Salvo Mode**: A chaotic and fast-paced mode where players fire a number of shots equal to their number of surviving ships each turn.
+
+* **Advanced AI & Systems**:
+    * **"Hunter-Killer" AI**: The AI uses an advanced strategy. Once it scores a hit, it intelligently hunts in adjacent cells to sink the ship before searching elsewhere.
+    * **In-Game AI Assistant**: A floating chat widget allows you to chat with a helpful AI assistant about the game or anything else, at any time.
+
+* **Strategic Power-Ups**:
+    * Spice up your matches with three unique, one-time-use abilities in PvP modes:
+        * **✈️ Scout Plane**: Reveals a random 2x2 area of the enemy's grid.
+        * **🚀 Torpedo**: Fires a shot that travels across an entire row or column, hitting the first ship in its path.
+        * **⚡ EMP Blast**: Disables your opponent's systems, forcing them to miss their next turn.
+
+* **Community & UI Features**:
+    * **Leaderboard**: A Hall of Fame that tracks and displays the top commanders by their total wins.
+    * **Modern UI**: A clean, responsive user interface with custom modals, icons, and a consistent theme.
+    * **Help & Guidance**: An in-game help modal explains all the rules and features to new players.
+
 * **Containerized Environment**: Easy to set up and run on any machine with Docker using a single command.
 
 -----

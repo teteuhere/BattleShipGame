@@ -2,6 +2,37 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8000/api';
 
+export const getGameState = async (gameId) => {
+  try {
+    const response = await axios.get(`${API_URL}/games/${gameId}/`, {
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching game state:", error);
+    throw error;
+  }
+};
+
+export const createOnlineGame = async (playerName, { boardWidth, boardHeight }) => {
+  try {
+    const payload = {
+      player1_name: playerName,
+      board_width: boardWidth,
+      board_height: boardHeight,
+    };
+    const response = await axios.post(`${API_URL}/games/online/create/`, payload);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating online game:", error);
+    throw error;
+  }
+};
+
 export const createGame = async (playerMode, gameRules, gameOptions) => {
   try {
     const payload = {
@@ -10,6 +41,8 @@ export const createGame = async (playerMode, gameRules, gameOptions) => {
       player1_name: gameOptions.player1,
       player2_name: gameOptions.player2,
       power_ups_enabled: gameOptions.power_ups_enabled,
+      board_width: gameOptions.boardWidth,
+      board_height: gameOptions.boardHeight,
     };
     const response = await axios.post(`${API_URL}/games/`, payload);
     return response.data;
@@ -19,10 +52,25 @@ export const createGame = async (playerMode, gameRules, gameOptions) => {
   }
 };
 
+export const joinGame = async (gameCode, playerName) => {
+  try {
+    const payload = {
+      game_code: gameCode,
+      player2_name: playerName,
+    };
+    const response = await axios.post(`${API_URL}/games/join/`, payload);
+    return response.data;
+  } catch (error) {
+    console.error("Error joining game:", error.response.data);
+    throw new Error(error.response.data.error || 'Failed to join game.');
+  }
+};
+
+// --- THIS FUNCTION IS UPDATED ---
 export const placeShips = async (gameId, playerId, ships) => {
   try {
     const payload = {
-      player_id: playerId,
+      player_id: playerId, // This line was missing or incorrect
       ships: ships,
     };
     const response = await axios.post(`${API_URL}/games/${gameId}/place-ships/`, payload);
@@ -32,12 +80,13 @@ export const placeShips = async (gameId, playerId, ships) => {
     throw error;
   }
 };
+// --- END UPDATE ---
 
-export const fireShot = async (gameId, playerId, coordinatesList) => { // Renamed to coordinatesList
+export const fireShot = async (gameId, playerId, coordinatesList) => {
     try {
         const payload = {
             player_id: playerId,
-            coordinates: coordinatesList, // Send the list
+            coordinates: coordinatesList,
         };
         const response = await axios.post(`${API_URL}/games/${gameId}/fire/`, payload);
         return response.data;
@@ -82,13 +131,6 @@ export const getLeaderboard = async () => {
     }
 };
 
-/**
- * A generic function to use any player ability.
- * @param {number} gameId - The ID of the current game.
- * @param {number} playerId - The ID of the player using the ability.
- * @param {string} abilityType - The type of ability ('scout', 'torpedo', 'emp').
- * @param {object} options - Extra data needed for the ability (e.g., torpedo target).
- */
 export const useAbility = async (gameId, playerId, abilityType, options = {}) => {
   try {
     const payload = {

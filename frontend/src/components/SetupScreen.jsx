@@ -9,16 +9,19 @@ const SHIPS_TO_PLACE = [
   { name: "Destruidor", length: 2 },
 ];
 
-function SetupScreen({ player, onPlacementComplete, onShowAlert }) {
+function SetupScreen({ player, gameState, onPlacementComplete, onShowAlert }) {
   const [currentShipIndex, setCurrentShipIndex] = useState(0);
   const [orientation, setOrientation] = useState("horizontal");
   const [placedShips, setPlacedShips] = useState([]);
+
+  if (!gameState) return null;
+  const { board_width, board_height } = gameState;
 
   useEffect(() => {
     setCurrentShipIndex(0);
     setPlacedShips([]);
     setOrientation("horizontal");
-  }, [player]);
+  }, [player.id]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -29,23 +32,20 @@ function SetupScreen({ player, onPlacementComplete, onShowAlert }) {
         );
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
-
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
   const grid = useMemo(() => {
-    const newGrid = Array(10)
+    const newGrid = Array(board_height)
       .fill(null)
       .map(() =>
-        Array(10)
+        Array(board_width)
           .fill(null)
           .map(() => ({ state: "empty", hasShip: false }))
       );
-
     placedShips.forEach((ship) => {
       ship.coordinates.forEach(([row, col]) => {
         if (newGrid[row] && newGrid[row][col]) {
@@ -53,38 +53,30 @@ function SetupScreen({ player, onPlacementComplete, onShowAlert }) {
         }
       });
     });
-
     return newGrid;
-  }, [placedShips]);
+  }, [placedShips, board_width, board_height]);
 
   const handleCellClick = (row, col) => {
     if (currentShipIndex >= SHIPS_TO_PLACE.length) return;
-
     const currentShip = SHIPS_TO_PLACE[currentShipIndex];
     let startRow = row;
     let startCol = col;
-
-    if (orientation === "horizontal" && col + currentShip.length > 10) {
-      startCol = 10 - currentShip.length;
+    if (orientation === "horizontal" && col + currentShip.length > board_width) {
+      startCol = board_width - currentShip.length;
     }
-    if (orientation === "vertical" && row + currentShip.length > 10) {
-      startRow = 10 - currentShip.length;
+    if (orientation === "vertical" && row + currentShip.length > board_height) {
+      startRow = board_height - currentShip.length;
     }
-
     const newShipCoordinates = [];
     for (let i = 0; i < currentShip.length; i++) {
       const newRow = orientation === "vertical" ? startRow + i : startRow;
       const newCol = orientation === "horizontal" ? startCol + i : startCol;
-
       if (grid[newRow][newCol].hasShip) {
-        onShowAlert(
-          "Posicionamento inválido: os navios não podem se sobrepor!"
-        );
+        onShowAlert("Posicionamento inválido: os navios não podem se sobrepor!");
         return;
       }
       newShipCoordinates.push([newRow, newCol]);
     }
-
     setPlacedShips([
       ...placedShips,
       { ship_type: currentShip.name, coordinates: newShipCoordinates },
@@ -109,39 +101,28 @@ function SetupScreen({ player, onPlacementComplete, onShowAlert }) {
       </div>
 
       <GameBoard
+        gameState={gameState}
         grid={grid}
         onCellClick={handleCellClick}
         isInteractive={true}
       />
 
-      <div className="flex gap-4 mt-4">
-        {/* <<<--- THIS BUTTON HAS BEEN UPDATED! ---<<< */}
+      <div className="flex flex-col sm:flex-row gap-4 mt-4">
         <button
-          onClick={() =>
-            setOrientation((o) =>
-              o === "horizontal" ? "vertical" : "horizontal"
-            )
-          }
-          className="bg-light-navy text-white font-bold py-2 px-4 rounded flex items-center gap-2"
+          onClick={() => setOrientation((o) => (o === "horizontal" ? "vertical" : "horizontal"))}
+          className="bg-light-navy text-white font-bold py-2 px-4 rounded flex items-center justify-center gap-2"
         >
           <span>
-            Rotacionar (
-            {orientation === "horizontal" ? "Horizontal" : "Vertical"})
+            Rotacionar ({orientation === "horizontal" ? "Horizontal" : "Vertical"})
           </span>
           <kbd className="bg-slate/50 text-accent text-xs font-mono p-1 rounded-md border-b-2 border-slate/80">
             CTRL
           </kbd>
         </button>
-        {/* --- END OF BUTTON UPDATE --->>> */}
-
         <button
           onClick={() => onPlacementComplete(placedShips)}
           disabled={!allShipsPlaced}
-          className={`font-bold py-2 px-4 rounded ${
-            !allShipsPlaced
-              ? "bg-slate/20 text-slate/50 cursor-not-allowed"
-              : "bg-accent text-navy"
-          }`}
+          className={`font-bold py-2 px-4 rounded ${!allShipsPlaced ? "bg-slate/20 text-slate/50 cursor-not-allowed" : "bg-accent text-navy"}`}
         >
           Confirmar Posicionamento
         </button>
