@@ -142,7 +142,7 @@ function BattleScreen({ gameState, onFireShot, onSurrender, currentPlayer, playe
             Disparar Salvo! ({shotsAllowed})
           </button>
         )}
-        {gameState.power_ups_enabled && isMyTurn && !gameState.winner && !isEmpd && (
+        {/* {gameState.power_ups_enabled && isMyTurn && !gameState.winner && !isEmpd && (
           <button
             onClick={onShowAbilities}
             className="font-bold py-2 px-6 rounded-md border transition-colors bg-amber-500/30 text-amber-300 border-amber-400 hover:bg-amber-500 hover:text-white"
@@ -150,7 +150,7 @@ function BattleScreen({ gameState, onFireShot, onSurrender, currentPlayer, playe
           >
             💥 Arsenal
           </button>
-        )}
+        )} */}
         {!gameState.winner && (
           <button
             onClick={() => onSurrender(currentPlayer.id)}

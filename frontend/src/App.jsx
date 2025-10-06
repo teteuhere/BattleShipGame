@@ -69,7 +69,7 @@ function App() {
         setError("Perdeu a conexão com o servidor.");
         stopPolling();
       }
-    }, 5000);
+    }, 3500);
   };
 
   useEffect(() => {

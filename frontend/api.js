@@ -1,27 +1,22 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+// const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
-export const getGameState = async (gameId) => {
-  try {
-    const response = await axios.get(`${API_URL}/games/${gameId}/`, {
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching game state:", error);
-    throw error;
+const getApiBaseUrl = () => {
+  const { protocol, hostname } = window.location;
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:8000/api';
   }
+  return `${protocol}//${hostname}:8000/api`;
 };
+
+const API_URL = getApiBaseUrl();
 
 export const createOnlineGame = async (playerName, { boardWidth, boardHeight }) => {
   try {
     const payload = {
       player1_name: playerName,
+      power_ups_enabled: true,
       board_width: boardWidth,
       board_height: boardHeight,
     };
@@ -32,6 +27,7 @@ export const createOnlineGame = async (playerName, { boardWidth, boardHeight }) 
     throw error;
   }
 };
+
 
 export const createGame = async (playerMode, gameRules, gameOptions) => {
   try {
@@ -66,7 +62,16 @@ export const joinGame = async (gameCode, playerName) => {
   }
 };
 
-// --- THIS FUNCTION IS UPDATED ---
+export const getGameState = async (gameId) => {
+  try {
+    const response = await axios.get(`${API_URL}/games/${gameId}/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error getting game state:", error);
+    throw error;
+  }
+};
+
 export const placeShips = async (gameId, playerId, ships) => {
   try {
     const payload = {
