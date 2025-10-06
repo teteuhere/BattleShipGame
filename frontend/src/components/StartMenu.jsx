@@ -22,7 +22,7 @@ function StartMenu({ onStartGame }) {
         className="w-full bg-navy text-cyan-300 font-bold py-4 px-6 border-2 border-cyan-400 rounded-md
                    hover:bg-cyan-400 hover:text-navy transition-colors duration-300"
       >
-        ONLINE
+        JOGAR
       </button>
     </div>
   );
