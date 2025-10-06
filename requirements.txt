@@ -5,3 +5,4 @@ mysqlclient
 requests
 locust
 django-cors-headers
+gunicorn
