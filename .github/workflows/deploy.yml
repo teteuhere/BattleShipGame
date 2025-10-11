@@ -1,0 +1,34 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux, x64, PROD]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Remove old files
+        run: |
+          sudo rm -rf /home/ec2-user/battleshipgame
+          cd /home/ec2-user
+          mkdir battleshipgame
+
+      - name: Copy code to ec2
+        run: |
+          cp -a * /home/ec2-user/battleshipgame
+
+      - name: Execute code
+        run: |
+          cd /home/ec2-user/battleshipgame
+
+          if [ -f ./start.sh ]; then
+            sudo chmod +x ./start.sh
+            sudo ./start.sh
+          else
+            echo "Start.sh not found"
+          fi

@@ -5,33 +5,27 @@ Welcome to Battleship: AI Edition! This is a classic game of Battleship with a m
 ## ✨ Features
 
 * **Multiplayer & Single Player Modes**:
-    * **Online Multiplayer**: Create a game lobby and share a unique code to play with a friend on a different machine.
-    * **Local PvP**: Battle against a friend on the same machine with turn-switch screens for privacy.
-    * **Player vs. AI**: Test your skills against a smart AI opponent.
-
+  * **Online Multiplayer**: Create a game lobby and share a unique code to play with a friend on a different machine.
+  * **Local PvP**: Battle against a friend on the same machine with turn-switch screens for privacy.
+  * **Player vs. AI**: Test your skills against a smart AI opponent.
 * **Dynamic & Responsive Gameplay**:
-    * **Responsive Board**: The game automatically adapts its layout, offering a classic **10x10** board on mobile devices and an epic **32x8** widescreen board on desktops.
-    * **"Commit-to-Play" Online**: To ensure fair play, players in an online match cannot simply leave. The back button is disabled, and closing the browser tab will automatically trigger a surrender.
-
+  * **Responsive Board**: The game automatically adapts its layout, offering a classic **10x10** board on mobile devices and an epic **32x8** widescreen board on desktops.
+  * **"Commit-to-Play" Online**: To ensure fair play, players in an online match cannot simply leave. The back button is disabled, and closing the browser tab will automatically trigger a surrender.
 * **Engaging Game Modes**:
-    * **Classic Mode**: The timeless naval strategy game you know and love. One shot per turn.
-    * **Salvo Mode**: A chaotic and fast-paced mode where players fire a number of shots equal to their number of surviving ships each turn.
-
+  * **Classic Mode**: The timeless naval strategy game you know and love. One shot per turn.
+  * **Salvo Mode**: A chaotic and fast-paced mode where players fire a number of shots equal to their number of surviving ships each turn.
 * **Advanced AI & Systems**:
-    * **"Hunter-Killer" AI**: The AI uses an advanced strategy. Once it scores a hit, it intelligently hunts in adjacent cells to sink the ship before searching elsewhere.
-    * **In-Game AI Assistant**: A floating chat widget allows you to chat with a helpful AI assistant about the game or anything else, at any time.
-
+  * **"Hunter-Killer" AI**: The AI uses an advanced strategy. Once it scores a hit, it intelligently hunts in adjacent cells to sink the ship before searching elsewhere.
+  * **In-Game AI Assistant**: A floating chat widget allows you to chat with a helpful AI assistant about the game or anything else, at any time.
 * **Strategic Power-Ups**:
-    * Spice up your matches with three unique, one-time-use abilities in PvP modes:
-        * **✈️ Scout Plane**: Reveals a random 2x2 area of the enemy's grid.
-        * **🚀 Torpedo**: Fires a shot that travels across an entire row or column, hitting the first ship in its path.
-        * **⚡ EMP Blast**: Disables your opponent's systems, forcing them to miss their next turn.
-
+  * Spice up your matches with three unique, one-time-use abilities in PvP modes:
+    * **✈️ Scout Plane**: Reveals a random 2x2 area of the enemy's grid.
+    * **🚀 Torpedo**: Fires a shot that travels across an entire row or column, hitting the first ship in its path.
+    * **⚡ EMP Blast**: Disables your opponent's systems, forcing them to miss their next turn.
 * **Community & UI Features**:
-    * **Leaderboard**: A Hall of Fame that tracks and displays the top commanders by their total wins.
-    * **Modern UI**: A clean, responsive user interface with custom modals, icons, and a consistent theme.
-    * **Help & Guidance**: An in-game help modal explains all the rules and features to new players.
-
+  * **Leaderboard**: A Hall of Fame that tracks and displays the top commanders by their total wins.
+  * **Modern UI**: A clean, responsive user interface with custom modals, icons, and a consistent theme.
+  * **Help & Guidance**: An in-game help modal explains all the rules and features to new players.
 * **Containerized Environment**: Easy to set up and run on any machine with Docker using a single command.
 
 -----
@@ -61,6 +55,7 @@ Make sure you have **Docker** and **Docker Compose** installed on your system.
 This project includes an automated script that handles the entire setup process for you, from building the containers to running the database migrations and starting the frontend server.
 
 1.  **Clone the Repository**
+
     ```bash
     git clone <your-repository-url>
     cd BattleShipGame
@@ -72,6 +67,7 @@ This project includes an automated script that handles the entire setup process 
     ```bash
     ./start.sh
     ```
+
     This script will:
     * Stop any old running containers.
     * Build the new Docker images.
@@ -80,21 +76,30 @@ This project includes an automated script that handles the entire setup process 
     * Apply all necessary database migrations.
     * Install frontend dependencies and launch the Vite development server.
 
-### 4. You're Ready to Play!
+### 4. You're Ready to Play
 
 With the script running, open your browser and navigate to the URL provided in the terminal (usually `http://localhost:5173`). Have fun!
 
----
+-----
 
 ### Manual Docker Commands (Optional)
 
 If you prefer to manage the services manually:
 
 * **To stop all services**:
+
     ```bash
     docker-compose down
     ```
+
 * **To view the logs from the backend**:
+
     ```bash
     docker-compose logs -f web
     ```
+
+-----
+
+## 📦 Reverse Proxy
+
+Caddy is used as the reverse proxy for this project.
