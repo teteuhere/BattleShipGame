@@ -1,0 +1,16 @@
+name: Deploy to EC2
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    deploy:
+        runs-on: [self-hosted, linux, x64, PROD]
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: sTEP 1
+              run: echo "This is step 1"
