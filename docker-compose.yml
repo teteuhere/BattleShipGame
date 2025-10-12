@@ -3,17 +3,19 @@ services:
   db:
     image: mysql:8.0
     container_name: mysql_db
+    env_file:
+      - .env
     environment:
-      MYSQL_ROOT_PASSWORD: databasewinds
-      MYSQL_DATABASE: battleshipDB
-      MYSQL_USER: ronin
-      MYSQL_PASSWORD: databasewinds
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p", "databasewinds"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -29,6 +31,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
       - SQL_HOST=db
       - SQL_PORT=3306
