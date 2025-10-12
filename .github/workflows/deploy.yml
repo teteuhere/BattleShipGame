@@ -29,6 +29,7 @@ jobs:
           cd /home/ec2-user/battleshipgame/frontend
           npm i 
           npm run build
+          sudo rm -rf /var/www/html/
           sudo mv dist/* /var/www/html/
 
       - name: Execute code
