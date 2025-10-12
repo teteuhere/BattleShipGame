@@ -35,6 +35,8 @@ jobs:
 
       - name: Make env
         run: |
+          cd /home/ec2-user/battleshipgame
+
           echo "ENVIRONMENT=PROD" >> .env
           echo "DB_NAME=battleshipDB" >> .env
           echo "DB_USER=ronin" >> .env
