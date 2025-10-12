@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-// const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+// const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://52.15.115.204:8000/api';
 
 const getApiBaseUrl = () => {
   const { protocol, hostname } = window.location;
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:8000/api';
+    return 'http://52.15.115.204:8000/api';
   }
   return `${protocol}//${hostname}:8000/api`;
 };

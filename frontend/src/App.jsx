@@ -89,7 +89,7 @@ function App() {
         currentPlayerId
       ) {
         const payload = { player_id: currentPlayerId };
-        fetch(`http://localhost:8000/api/games/${activeGame.id}/surrender/`, {
+        fetch(`http://52.15.115.204:8000/api/games/${activeGame.id}/surrender/`, {
           method: "POST",
           body: JSON.stringify(payload),
           headers: { "Content-Type": "application/json" },
