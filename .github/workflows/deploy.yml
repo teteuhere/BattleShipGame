@@ -29,8 +29,6 @@ jobs:
       #     cd /home/ec2-user/battleshipgame/frontend
       #     npm i 
       #     npm run build
-      #     cd /var/www/html/
-      #     sudo rm -rf *
       #     sudo mv dist/* /var/www/html/
 
       - name: Make env
