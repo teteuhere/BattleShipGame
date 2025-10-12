@@ -24,14 +24,25 @@ jobs:
         run: |
           cp -a * /home/ec2-user/battleshipgame
 
-      - name: Make frontend
+      # - name: Make frontend
+      #   run: |
+      #     cd /home/ec2-user/battleshipgame/frontend
+      #     npm i 
+      #     npm run build
+      #     cd /var/www/html/
+      #     sudo rm -rf *
+      #     sudo mv dist/* /var/www/html/
+
+      - name: Make env
         run: |
-          cd /home/ec2-user/battleshipgame/frontend
-          npm i 
-          npm run build
-          cd /var/www/html/
-          sudo rm -rf *
-          sudo mv dist/* /var/www/html/
+          echo "ENVIRONMENT=PROD" >> .env
+          echo "DB_NAME=battleshipDB" >> .env
+          echo "DB_USER=ronin" >> .env
+          echo "DB_PASS=databasewinds" >> .env
+          echo "DB_HOST=db" >> .env
+          echo "DB_PORT=3306" >> .env
+          echo "DB_ROOT=databasewinds" >> .env
+          echo "DJANGO_SECRET_KEY=4!^1d=oo0trt=$808b337zz^uy=elmwu1-y&0c6v!qct%jz9" >> .env
 
       - name: Execute code
         run: |
