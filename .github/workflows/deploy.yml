@@ -22,13 +22,15 @@ jobs:
         run: |
           cp -a * /home/ec2-user/battleshipgame
 
+      - name: Make frontend
+        run: |
+          cd /home/ec2-user/battleshipgame/frontend
+          npm i 
+          npm run build
+          sudo mv dist/* /var/www/html/
+
       - name: Execute code
         run: |
           cd /home/ec2-user/battleshipgame
+          sudo docker-compose up -d --build --force-recreate
 
-          if [ -f ./start.sh ]; then
-            sudo chmod +x ./start.sh
-            sudo ./start.sh
-          else
-            echo "Start.sh not found"
-          fi
