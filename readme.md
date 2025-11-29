@@ -4,8 +4,6 @@ Bem-vindo ao projeto **Batalha Naval**. Esta é uma implementação moderna e *f
 
 O sistema utiliza um backend em Django para gerenciar a lógica de jogo e validações, um frontend em React para uma experiência interativa e Docker para orquestração de todo o ambiente.
 
-**Autor:** Matheus da Silva Cirqueira (Clancy)
-
 ## ✨ Funcionalidades
 
 O foco deste projeto é oferecer a experiência tradicional de Batalha Naval com qualidade técnica de engenharia de software:
@@ -90,3 +88,15 @@ Se preferir gerenciar os serviços manualmente sem o script:
     ```bash
     docker-compose logs -f web
     ```
+
+-----
+
+## 👨‍💻 Autoria e Desenvolvimento
+
+Este projeto é uma obra de **autoria exclusiva** de **Matheus da Silva Cirqueira (Clancy)**.
+
+* **Arquitetura & Infraestrutura**: Definição da stack, configuração dos containers Docker e orquestração.
+* **Backend Engineering**: Desenvolvimento completo da API, lógica de negócios e persistência de dados.
+* **Frontend Engineering**: Criação da interface, UX/UI e integração com o backend.
+
+Copyright © 2025 Matheus da Silva Cirqueira. Todos os direitos reservados.
