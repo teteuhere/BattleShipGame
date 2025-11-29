@@ -21,13 +21,13 @@ echo -e "${YELLOW}Reconstruindo e implantando os navios (containers)...${NC}"
 docker-compose up -d --build
 
 echo -e "${YELLOW}Aguardando o serviço de IA (ollama_ai) ficar online...${NC}"
-until curl -s http://localhost:11434/ > /dev/null; do
-    echo "Ollama ainda não está pronto, aguardando..."
-    sleep 2
-done
+#until curl -s http://localhost:11434/ > /dev/null; do
+#    echo "Ollama ainda não está pronto, aguardando..."
+#    sleep 2
+#done
 
-echo -e "${GREEN}Ollama está pronto! Garantindo que o modelo de IA 'gemma:2b' esteja disponível...${NC}"
-docker-compose exec ollama ollama pull gemma:2b
+#echo -e "${GREEN}Ollama está pronto! Garantindo que o modelo de IA 'gemma:2b' esteja disponível...${NC}"
+#docker-compose exec ollama ollama pull gemma:2b
 
 echo -e "${YELLOW}Aguardando o banco de dados (mysql_db) ficar 100% operacional...${NC}"
 # Este loop espera até que o container do banco de dados esteja saudável
